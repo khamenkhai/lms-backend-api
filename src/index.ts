@@ -2,8 +2,11 @@ import express, { Application, Request, Response } from "express";
 import dotenv from "dotenv";
 import { AppError } from "./utils/app-error";
 import { errorHandler } from "./middlewares/errorHandler";
-import categoryRoutes from "./routes/category.route";
+// import categoryRoutes from "./routes/category.route";
 import authRoutes from "./routes/auth.route";
+import courseRoutes from "./routes/course.route";
+import moduleRoutes from "./routes/module.route";
+import orderRoutes from "./routes/order.route";
 
 // Load environment variables
 dotenv.config();
@@ -17,8 +20,10 @@ const APP_NAME: string = process.env.APP_NAME || "MyApp";
 
 app.use(express.json());
 
-app.use(categoryRoutes);
 app.use(authRoutes);
+app.use(courseRoutes);
+app.use(moduleRoutes);
+app.use(orderRoutes);
 
 
 // Define a basic route with typed req/res

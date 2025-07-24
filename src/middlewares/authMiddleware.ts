@@ -2,6 +2,8 @@ import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { prismaClient } from "../utils/prismaClient";
 import { AppError } from "../utils/app-error";
+import dotenv from "dotenv";
+dotenv.config();
 
 // Define your JWT payload interface
 interface JwtPayload {
@@ -14,6 +16,7 @@ type User = {
   id: number;
   name: string;
   email: string;
+  role: string;
   // Add other user properties from your schema
 };
 
@@ -87,5 +90,16 @@ export const authMiddleware = async (
   req.user = currentUser;
   next();
 };
+
+
+// validate user roles
+export const authorizeRoles = (...roles: string[]) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!roles.includes(req.user?.role || '')) {
+      return next(new AppError(`Role ${req.user?.role} is not allowed to access this resource`, 403));
+    }
+    next();
+  }
+}
 
 export default authMiddleware;

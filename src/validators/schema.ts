@@ -1,23 +1,28 @@
 import { z } from "zod";
 
-export const OrderItemSchema = z.object({
-  product_id: z.number(),
-  variant_id: z.number().optional(), // optional if nullable
-  quantity: z.number().min(1),
+export const CourseSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  price: z.number().int().nonnegative("Price must be a non-negative integer"),
+  level: z.string().min(1, "Level is required"), // You can use z.enum if level is restricted
+  language: z.string().min(1, "Language is required"),
+  duration: z.string().min(1, "Duration is required"),
+  total_students: z.number().int().nonnegative().optional(), // optional for input; default is 0 in DB
+  requirements: z.string().min(1, "Requirements are required"),
+  learning_outcomes: z.string().min(1, "Learning outcomes are required"),
+  category_id: z.number().int().positive("Category ID must be a positive integer"),
+  instructor_id: z.number().int().positive("Instructor ID must be a positive integer"),
 });
 
-export const CreateOrderSchema = z.object({
-  table_id: z.number(),
-  tax: z.number().nonnegative(),
-  order_items: z.array(OrderItemSchema).min(1),
+export const ModuleSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  position: z.number().int().nonnegative("Position must be a non-negative integer"),
+  course_id: z.number().int().positive("Course ID must be a positive integer"),
 });
 
-export type CreateOrderInput = z.infer<typeof CreateOrderSchema>;
-
-// Validate buffet order request
-export const CreateBuffetOrderSchema = z.object({
-  table_id: z.number(),
-  buffet_id: z.number(),
-  people_count: z.number().min(1),
-  tax: z.number().optional(),
+export const createOrderSchema = z.object({
+  course_id: z.number().int("Course ID must be an integer"),
+  status: z.enum(["pending", "paid", "failed", "refunded"]).optional(),
+  payment_method_id: z.string().optional(),
+  provider_transaction_id: z.string().optional(),
 });

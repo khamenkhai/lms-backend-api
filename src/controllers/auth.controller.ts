@@ -3,10 +3,11 @@ import { prismaClient } from "../utils/prismaClient";
 import { AppError } from "../utils/app-error";
 import { hashSync, compareSync } from "bcrypt";
 import jwt from "jsonwebtoken";
+import catchAsync from "../utils/catchAsync";
 
 const JWT_SECRET = process.env.JWT_SECRET || "SECRET";
 
-export const register = async (
+export const register = catchAsync(async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -17,60 +18,65 @@ export const register = async (
     throw new AppError("Name, email and password are required!", 400);
   }
 
-  let user = await prismaClient.user.findFirst({ where: { email: email } });
-
-  if (user) {
-    throw new AppError("User already existed!", 500);
+  const existingUser = await prismaClient.user.findFirst({ where: { email } });
+  if (existingUser) {
+    throw new AppError("User already exists!", 409); // Changed from 500 to 409 Conflict
   }
 
-  const hasedPassword = hashSync(password, 10);
+  const hashedPassword = hashSync(password, 10);
 
-  user = await prismaClient.user.create({
+  const user = await prismaClient.user.create({
     data: {
       name: name,
       email: email,
-      password: hasedPassword,
+      password: hashedPassword,
+      
     },
   });
 
-  res.status(201).json({
-    statusCode: 201,
-    message: "User",
-    data: user,
-  });
-};
+  // Remove password from response
+  const { password: _, ...userWithoutPassword } = user;
 
-export const login = async (
+  res.status(201).json({
+    status: "success",
+    statusCode: 201,
+    message: "User registered successfully",
+    data: userWithoutPassword,
+  });
+});
+
+export const login = catchAsync(async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   const { email, password } = req.body;
 
-  let user = await prismaClient.user.findFirst({ where: { email } });
-
+  const user = await prismaClient.user.findFirst({ where: { email } });
   if (!user) {
-    throw new AppError("User does not existed!", 409);
+    throw new AppError("Invalid email or password", 401); // More generic message for security
   }
 
   if (!compareSync(password, user.password)) {
-    throw new AppError("Incorrect password!", 409);
+    throw new AppError("Invalid email or password", 401);
   }
 
   const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "1d" });
 
-  res.json({
+  // Remove password from response
+  const { password: _, ...userWithoutPassword } = user;
+
+  res.status(200).json({
+    status: "success",
     message: "Login successful",
     data: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
+      ...userWithoutPassword,
       access_token: token,
     },
   });
-};
+});
 
-export const getProfile = async (
+export const getProfile = catchAsync(async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -89,8 +95,12 @@ export const getProfile = async (
     throw new AppError("User not found", 404);
   }
 
-  res.json({
+  // Remove password from response
+  const { password: _, ...userWithoutPassword } = user;
+
+  res.status(200).json({
+    status: "success",
     message: "User profile retrieved successfully",
-    data: user,
+    data: userWithoutPassword,
   });
-};
+});

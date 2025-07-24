@@ -5,25 +5,257 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-
-model Template {
-  id          Int       @id @default(autoincrement())
-  name        String    @unique
-  description String    @default("")
-
-  @@map("categories")
-}
-
 model User {
-  id       Int     @id @default(autoincrement())
-  name     String
-  email    String  @unique
-  password String
+  id                Int               @id @default(autoincrement())
+  name              String
+  email             String            @unique
+  password          String
+  role              UserRole          @default(student)
+  enrollments       Enrollment[]
+  contentProgresses ContentProgress[]
+  reviews           Review[]
+  userQuizAttempts  UserQuizAttempt[]
+  orders            Order[]
+  courses           Course[]
+  cart              UserCart[]
 
   @@map("users")
 }
 
+enum UserRole {
+  student
+  instructor
+  admin
+}
+
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  courses     Course[]
+
+  @@map("categories")
+}
+
+model Enrollment {
+  id                  Int       @id @default(autoincrement())
+  name                String
+  enrolled_at         DateTime  @default(now())
+  completed_at        DateTime?
+  access_expires_at   DateTime?
+  progress_percentage Int
+  user_id             Int
+  course_id           Int
+  user                User      @relation(fields: [user_id], references: [id])
+  course              Course    @relation(fields: [course_id], references: [id])
+
+  @@map("enrollments")
+}
+
+model UserCart {
+  id        Int      @id @default(autoincrement())
+  user_id   Int
+  course_id Int
+  added_at  DateTime @default(now())
+  user      User     @relation(fields: [user_id], references: [id])
+  course    Course   @relation(fields: [course_id], references: [id])
+
+  @@unique([user_id, course_id])
+  @@map("user_carts")
+}
+
+model Course {
+  id                Int          @id @default(autoincrement())
+  title             String       @unique
+  description       String?
+  price             Int
+  level             String
+  language          String
+  duration          String
+  total_students    Int          @default(0)
+  requirements      String
+  learning_outcomes String
+  category_id       Int
+  category          Category     @relation(fields: [category_id], references: [id])
+  modules           Module[]
+  enrollments       Enrollment[]
+  orders            Order[]
+  instructor_id     Int
+  instructor        User         @relation(fields: [instructor_id], references: [id])
+  userCart          UserCart[]
+
+  @@map("courses")
+}
+
+model Module {
+  id        Int       @id @default(autoincrement())
+  title     String
+  position  Int
+  course_id Int
+  course    Course    @relation(fields: [course_id], references: [id])
+  contents  Content[]
+
+  @@map("modules")
+}
+
+model Content {
+  id                Int               @id @default(autoincrement())
+  title             String
+  type              String //video, article, quizz
+  content_url       String //video, or image url
+  content_type      ContentType
+  duration          String
+  position          Int
+  module_id         Int
+  module            Module            @relation(fields: [module_id], references: [id])
+  quizzes           Quiz[] // Renamed from "quizzs"
+  contentProgresses ContentProgress[]
+  reviews           Review[]
+
+  @@map("contents")
+}
+
+model Quiz {
+  id               Int               @id @default(autoincrement())
+  title            String
+  content_id       Int
+  content          Content           @relation(fields: [content_id], references: [id])
+  questions        Question[]
+  userQuizAttempts UserQuizAttempt[]
+
+  @@map("quizzes")
+}
+
+model Question {
+  id             Int              @id @default(autoincrement())
+  quiz_id        Int
+  question_text  String
+  quiz           Quiz             @relation(fields: [quiz_id], references: [id])
+  answers        Answer[]
+  UserQuizAnswer UserQuizAnswer[]
+
+  @@map("questions")
+}
+
+model Answer {
+  id             Int              @id @default(autoincrement())
+  question_id    Int
+  answer_text    String
+  is_correct     Boolean
+  question       Question         @relation(fields: [question_id], references: [id])
+  UserQuizAnswer UserQuizAnswer[]
+
+  @@map("answers")
+}
+
+model ContentProgress {
+  id           Int     @id @default(autoincrement())
+  is_completed Boolean @default(false)
+  user_id      Int
+  user         User    @relation(fields: [user_id], references: [id])
+  content_id   Int
+  content      Content @relation(fields: [content_id], references: [id])
+
+  @@map("content_progresses")
+}
+
+model Review {
+  id           Int     @id @default(autoincrement())
+  is_completed Boolean @default(false)
+  user_id      Int
+  user         User    @relation(fields: [user_id], references: [id])
+  content_id   Int
+  content      Content @relation(fields: [content_id], references: [id])
+
+  @@map("reviews")
+}
+
+model UserQuizAttempt {
+  id           Int               @id @default(autoincrement())
+  user_id      Int
+  quiz_id      Int
+  started_at   DateTime          @default(now())
+  completed_at DateTime?
+  score        Decimal           @default(0)
+  status       QuizAttemptStatus @default(IN_PROGRESS)
+  user         User              @relation(fields: [user_id], references: [id])
+  quiz         Quiz              @relation(fields: [quiz_id], references: [id])
+  answers      UserQuizAnswer[]
+
+  @@index([user_id])
+  @@index([quiz_id])
+  @@map("user_quiz_attempts")
+}
+
+enum QuizAttemptStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+model UserQuizAnswer {
+  id          Int             @id @default(autoincrement())
+  attempt_id  Int
+  question_id Int
+  answer_id   Int? // nullable if no answer selected
+  is_correct  Boolean
+  answered_at DateTime
+  attempt     UserQuizAttempt @relation(fields: [attempt_id], references: [id])
+  question    Question        @relation(fields: [question_id], references: [id])
+  answer      Answer?         @relation(fields: [answer_id], references: [id])
+
+  @@map("user_quiz_answers")
+}
+
+model Order {
+  id         Int         @id @default(autoincrement())
+  status     OrderStatus @default(pending)
+  amount     Int
+  created_at DateTime    @default(now())
+  updated_at DateTime    @updatedAt
+  user_id    Int
+  user       User        @relation(fields: [user_id], references: [id])
+  course_id  Int
+  course     Course      @relation(fields: [course_id], references: [id])
+  payment    Payment?
+
+  @@map("orders")
+}
+
+enum OrderStatus {
+  pending
+  paid
+  failed
+  refunded
+}
+
+model Payment {
+  id                      Int           @id @default(autoincrement())
+  order_id                Int           @unique
+  payment_method_id       String
+  provider_transaction_id String
+  amount                  Int
+  paid_at                 DateTime      @default(now())
+  order                   Order         @relation(fields: [order_id], references: [id])
+  paymentMethod           PaymentMethod @relation(fields: [payment_method_id], references: [id])
+
+  @@map("payments")
+}
+
+model PaymentMethod {
+  id       String    @id
+  provider String
+  payments Payment[]
+
+  @@map("payment_methods")
+}
+
+enum ContentType {
+  VIDEO
+  ARTICLE
+  QUIZ
+}
