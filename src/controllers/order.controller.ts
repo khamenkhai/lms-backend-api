@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { prismaClient } from "../utils/prismaClient";
 import { sendResponse } from "../utils/response";
-import { createOrderSchema } from "../validators/schema";
+import { createOrderSchema, EnrollmentSchema } from "../validators/schema";
 
 export const createOrder = async (
     req: Request,
@@ -79,3 +79,20 @@ export const createOrder = async (
         next(error);
     }
 };
+
+export const getAllOrders = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<any> => {
+    try {
+        const orderData = await prismaClient.order.findMany();
+
+        sendResponse(res, 200, "Order fetch successfully!", orderData);
+
+    } catch (error) {
+        console.error("[createOrder] Error:", error);
+        next(error);
+    }
+};
+

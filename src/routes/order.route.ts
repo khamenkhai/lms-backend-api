@@ -1,9 +1,10 @@
 import { Router } from "express";
-import { createOrder } from "../controllers/order.controller";
-import authMiddleware from "../middlewares/authMiddleware";
+import { createOrder, getAllOrders } from "../controllers/order.controller";
+import authMiddleware, { authorizeRoles } from "../middlewares/authMiddleware";
 
 const orderRoutes = Router();
 
-orderRoutes.post("/order", authMiddleware, createOrder);
+orderRoutes.post("/orders", authMiddleware, createOrder);
+orderRoutes.get("/orders", authMiddleware, getAllOrders);
 
 export default orderRoutes;

@@ -7,6 +7,10 @@ import authRoutes from "./routes/auth.route";
 import courseRoutes from "./routes/course.route";
 import moduleRoutes from "./routes/module.route";
 import orderRoutes from "./routes/order.route";
+import contentRoutes from "./routes/content.route";
+import enrollmentRoutes from "./routes/enrollment.route";
+import quizRoutes from "./routes/quizz.route";
+import questionAnswerRoutes from "./routes/quizzAnswer.route";
 
 // Load environment variables
 dotenv.config();
@@ -24,6 +28,10 @@ app.use(authRoutes);
 app.use(courseRoutes);
 app.use(moduleRoutes);
 app.use(orderRoutes);
+app.use(contentRoutes);
+app.use(enrollmentRoutes);
+app.use(quizRoutes);
+app.use(questionAnswerRoutes);
 
 
 // Define a basic route with typed req/res
