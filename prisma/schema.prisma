@@ -71,6 +71,7 @@ model UserCart {
 model Course {
   id                Int          @id @default(autoincrement())
   title             String       @unique
+  imageUrl          String?
   description       String?
   price             Int
   level             String

@@ -38,7 +38,7 @@ export const register = catchAsync(async (
   const { password: _, ...userWithoutPassword } = user;
 
   res.status(201).json({
-    status: "success",
+    status: true,
     statusCode: 201,
     message: "User registered successfully",
     data: userWithoutPassword,
@@ -67,7 +67,7 @@ export const login = catchAsync(async (
   const { password: _, ...userWithoutPassword } = user;
 
   res.status(200).json({
-    status: "success",
+    status: true,
     message: "Login successful",
     data: {
       ...userWithoutPassword,

@@ -11,12 +11,20 @@ import contentRoutes from "./routes/content.route";
 import enrollmentRoutes from "./routes/enrollment.route";
 import quizRoutes from "./routes/quizz.route";
 import questionAnswerRoutes from "./routes/quizzAnswer.route";
+import cors from 'cors';
 
 // Load environment variables
 dotenv.config();
 
 // Create the Express application
 const app: Application = express();
+
+app.use(cors({
+  origin: '*', // or 'http://localhost:5000'
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
 
 // Define port and app name from environment variables
 const PORT: number = parseInt(process.env.PORT || "5000", 10);
@@ -61,14 +69,14 @@ function getLocalIpAddress(): string {
   return "local-ip-address";
 }
 
-// app.listen(PORT, "192.168.100.203", (): void => {
-//   console.log(`🚀 ${APP_NAME} is running at http://localhost:${PORT}`);
-//   console.log(
-//     `🚀 Also accessible on your local network at http://${getLocalIpAddress()}:${PORT}`
-//   );
-// });
+app.listen(PORT, "192.168.50.21", (): void => {
+  console.log(`🚀 ${APP_NAME} is running at http://localhost:${PORT}`);
+  console.log(
+    `🚀 Also accessible on your local network at http://${getLocalIpAddress()}:${PORT}`
+  );
+});
 
 // Start the server
-app.listen(PORT, (): void => {
-  console.log(`🚀 ${APP_NAME} is running at http://localhost:${PORT}`);
-});
+// app.listen(PORT, (): void => {
+//   console.log(`🚀 ${APP_NAME} is running at http://localhost:${PORT}`);
+// });

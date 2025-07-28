@@ -51,6 +51,7 @@ export const getCourses = async (
                         email: true,
                     },
                 },
+                enrollments : true
             },
         });
         sendResponse(res, 200, "Courses fetched successfully!", courses);
