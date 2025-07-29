@@ -12,6 +12,7 @@ import enrollmentRoutes from "./routes/enrollment.route";
 import quizRoutes from "./routes/quizz.route";
 import questionAnswerRoutes from "./routes/quizzAnswer.route";
 import cors from 'cors';
+import categoryRoutes from "./routes/category.route";
 
 // Load environment variables
 dotenv.config();
@@ -39,6 +40,7 @@ app.use(orderRoutes);
 app.use(contentRoutes);
 app.use(enrollmentRoutes);
 app.use(quizRoutes);
+app.use(categoryRoutes);
 app.use(questionAnswerRoutes);
 
 

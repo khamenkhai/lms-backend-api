@@ -43,6 +43,9 @@ export const getModulesByCourse = async (
         const courses = await prismaClient.module.findMany({
             where: {
                 course_id: courseId
+            },
+            include : {
+                contents : true
             }
         });
 
@@ -67,6 +70,9 @@ export const getModulesById = async (
 
         const module = await prismaClient.module.findUnique({
             where: { id: moduleId },
+            include : {
+                contents : true
+            }
 
         });
 

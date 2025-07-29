@@ -10,27 +10,23 @@ const parseId = (idParam: string | undefined): number | null => {
 };
 
 export const createCourse = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
+    req: Request,
+    res: Response,
+    next: NextFunction
 ): Promise<any> => {
-  try {
-    // This will throw if invalid
-    const validatedData = CourseSchema.parse(req.body);
+    try {
+        // This will throw if invalid
+        const validatedData = CourseSchema.parse(req.body);
 
-    const courseData = await prismaClient.course.create({
-      data: validatedData,
-    });
+        const courseData = await prismaClient.course.create({
+            data: validatedData,
+        });
 
-    sendResponse(res, 201, "Course created successfully!", courseData);
-  } catch (error) {
-    // if (error instanceof z.ZodError) {
-    //   // Validation error
-    //   return res.status(400).json({ message: "Invalid course data", errors: error.errors });
-    // }
-    console.error("[createCourse] Error:", error);
-    next(error);
-  }
+        sendResponse(res, 201, "Course created successfully!", courseData);
+    } catch (error) {
+        console.error("[createCourse] Error:", error);
+        next(error);
+    }
 };
 
 
@@ -51,7 +47,8 @@ export const getCourses = async (
                         email: true,
                     },
                 },
-                enrollments : true
+                enrollments: true,
+
             },
         });
         sendResponse(res, 200, "Courses fetched successfully!", courses);
@@ -84,6 +81,8 @@ export const getCourseById = async (
                         email: true,
                     },
                 },
+                modules : true,
+                enrollments : true,
             },
         });
 

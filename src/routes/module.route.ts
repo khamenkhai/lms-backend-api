@@ -4,9 +4,9 @@ import { createModule, deleteModules, getModulesByCourse, getModulesById, update
 const moduleRoutes = Router();
 
 moduleRoutes.post("/modules", createModule);
-moduleRoutes.get("/modules/:courseId", getModulesByCourse);
+moduleRoutes.get("/course-module/:courseId", getModulesByCourse);
 moduleRoutes.get("/modules/:id", getModulesById);
 moduleRoutes.put("/modules/:id", updateModules);
-moduleRoutes.delete("/modules:id", deleteModules);
+moduleRoutes.delete("/modules/:id", deleteModules);
 
 export default moduleRoutes;

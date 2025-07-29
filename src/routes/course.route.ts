@@ -4,10 +4,10 @@ import authMiddleware, { authorizeRoles } from "../middlewares/authMiddleware";
 
 const courseRoutes = Router();
 
-courseRoutes.post("/courses", authMiddleware,authorizeRoles("admin"), createCourse);
-courseRoutes.get("/courses", getCourses);
+courseRoutes.post("/courses", authMiddleware, authorizeRoles("admin"), createCourse);
+courseRoutes.get("/courses", authMiddleware, getCourses);
 courseRoutes.get("/courses/:id", getCourseById);
-courseRoutes.put("/courses/:id", authorizeRoles("admin"), updateCourse);
-courseRoutes.delete("/courses:id", authorizeRoles("admin"), deleteCourse);
+courseRoutes.put("/courses/:id", authMiddleware, authorizeRoles("admin"), updateCourse);
+courseRoutes.delete("/courses:id", authMiddleware, authorizeRoles("admin"), deleteCourse);
 
 export default courseRoutes;
