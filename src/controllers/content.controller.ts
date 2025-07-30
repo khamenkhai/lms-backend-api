@@ -45,7 +45,7 @@ export const getContentsByModule = async (
                 module_id: moduleId
             },
             include: {
-                quizzes: true
+                quiz: true
             }
         });
 

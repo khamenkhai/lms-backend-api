@@ -99,7 +99,7 @@ export const getProfile = catchAsync(async (
   const { password: _, ...userWithoutPassword } = user;
 
   res.status(200).json({
-    status: "success",
+    status: true,
     message: "User profile retrieved successfully",
     data: userWithoutPassword,
   });

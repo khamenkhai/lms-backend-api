@@ -22,6 +22,8 @@ model User {
   orders            Order[]
   courses           Course[]
   cart              UserCart[]
+  wish_lists        Wishlist[]
+  certificates      Certificate[]
 
   @@map("users")
 }
@@ -69,25 +71,27 @@ model UserCart {
 }
 
 model Course {
-  id                Int          @id @default(autoincrement())
-  title             String       @unique
+  id                Int           @id @default(autoincrement())
+  title             String        @unique
   imageUrl          String?
   description       String?
   price             Int
   level             String
   language          String
   duration          String
-  total_students    Int          @default(0)
+  total_students    Int           @default(0)
   requirements      String
   learning_outcomes String
   category_id       Int
-  category          Category     @relation(fields: [category_id], references: [id])
+  category          Category      @relation(fields: [category_id], references: [id])
   modules           Module[]
   enrollments       Enrollment[]
   orders            Order[]
   instructor_id     Int
-  instructor        User         @relation(fields: [instructor_id], references: [id])
-  userCart          UserCart[]
+  instructor        User          @relation(fields: [instructor_id], references: [id])
+  user_cart         UserCart[]
+  wish_list         Wishlist[]
+  certificates      Certificate[]
 
   @@map("courses")
 }
@@ -106,16 +110,15 @@ model Module {
 model Content {
   id                Int                   @id @default(autoincrement())
   title             String
-  type              String //video, article, quizz
   content_url       String //video, or image url
   content_type      ContentType
   duration          String
   position          Int
   module_id         Int
   module            Module                @relation(fields: [module_id], references: [id])
-  quizzes           Quiz[] // Renamed from "quizzs"
   contentProgresses UserContentProgress[]
   reviews           Review[]
+  quiz              Quiz?
 
   @@map("contents")
 }
@@ -123,7 +126,7 @@ model Content {
 model Quiz {
   id               Int               @id @default(autoincrement())
   title            String
-  content_id       Int
+  content_id       Int               @unique
   content          Content           @relation(fields: [content_id], references: [id])
   questions        Question[] // Remove onDelete from here
   userQuizAttempts UserQuizAttempt[]
@@ -218,6 +221,18 @@ model UserQuizAnswer {
   @@map("user_quiz_answers")
 }
 
+model Wishlist {
+  id        Int      @id @default(autoincrement())
+  user_id   Int
+  course_id Int
+  added_at  DateTime @default(now())
+  user      User     @relation(fields: [user_id], references: [id])
+  course    Course   @relation(fields: [course_id], references: [id])
+
+  @@unique([user_id, course_id])
+  @@map("wishlists")
+}
+
 model Order {
   id         Int         @id @default(autoincrement())
   status     OrderStatus @default(pending)
@@ -265,4 +280,17 @@ enum ContentType {
   VIDEO
   ARTICLE
   QUIZ
+}
+
+model Certificate {
+  id              Int      @id @default(autoincrement())
+  user_id         Int
+  course_id       Int
+  issued_at       DateTime @default(now())
+  certificate_url String?
+  user            User     @relation(fields: [user_id], references: [id])
+  course          Course   @relation(fields: [course_id], references: [id])
+
+  @@unique([user_id, course_id])
+  @@map("certificates")
 }

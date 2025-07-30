@@ -7,6 +7,6 @@ contentRoutes.post("/contents", createContent);
 contentRoutes.get("/module-contents/:moduleId", getContentsByModule);
 contentRoutes.get("/contents/:id", getContentById);
 contentRoutes.put("/contents/:id", updateContent);
-contentRoutes.delete("/contents:id", deleteContent);
+contentRoutes.delete("/contents/:id", deleteContent);
 
 export default contentRoutes;

@@ -39,7 +39,7 @@ export const addQuestionsWithAnswers = async (
             }
         }
 
-        sendResponse(res, 201, "Questions and answers added successfully");
+        sendResponse(res, 201, "Questions and answers added successfully", quiz);
     } catch (error) {
         console.error("[addQuestionsWithAnswers] Error:", error);
         next(error);
@@ -111,7 +111,7 @@ export const updateQuestionsWithAnswers = async (
         }
 
         sendResponse(res, 200, "Questions and answers updated successfully");
-        
+
     } catch (error) {
         console.error("[updateQuestionsWithAnswers] Error:", error);
         next(error);
