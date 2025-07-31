@@ -4,16 +4,13 @@ export const quizzAnswerTypeEnum = z.enum(["TEXT", "MULTIPLE_CHOICE", "TRUE_FALS
 
 export const answerSchema = z.object({
   answer_text: z.string().min(1, "Answer text cannot be empty"),
+  is_correct : z.boolean().default(false)
 });
 
 export const questionSchema = z.object({
   question_text: z.string().min(1, "Question text cannot be empty"),
   type: quizzAnswerTypeEnum,
   answers: z.array(answerSchema).min(1, "At least one answer is required"),
-});
-
-export const addQuestionsWithAnswersSchema = z.object({
-  questions: z.array(questionSchema).min(1, "At least one question is required"),
 });
 
 
@@ -29,15 +26,15 @@ export const createQuizSchema = z.object({
 export const answerUpdateSchema = z.object({
   id: z.number().optional(), // for existing answer updates
   answer_text: z.string().min(1, "Answer text cannot be empty").optional(),
+  is_correct : z.boolean().default(false)
 });
 
 export const questionUpdateSchema = z.object({
   id: z.number().optional(), // for existing question updates
+  quizz_id: z.number(), // for existing question updates
   question_text: z.string().min(1, "Question text cannot be empty").optional(),
   type: quizzAnswerTypeEnum.optional(),
   answers: z.array(answerUpdateSchema).optional(),
+  deletedAnswerIds: z.array(z.number()).optional(),
 });
 
-export const updateQuestionsWithAnswersSchema = z.object({
-  questions: z.array(questionUpdateSchema).min(1, "At least one question is required"),
-});

@@ -150,6 +150,7 @@ model QuizzAnswer {
   id              Int              @id @default(autoincrement())
   answer_text     String
   question_id     Int
+  is_correct      Boolean          @default(false)
   question        Question         @relation(fields: [question_id], references: [id], onDelete: Cascade) // Add onDelete here
   userQuizAnswers UserQuizAnswer[]
 
