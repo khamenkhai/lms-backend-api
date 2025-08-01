@@ -97,12 +97,13 @@ model Course {
 }
 
 model Module {
-  id        Int       @id @default(autoincrement())
-  title     String
-  position  Int
-  course_id Int
-  course    Course    @relation(fields: [course_id], references: [id])
-  contents  Content[]
+  id         Int       @id @default(autoincrement())
+  title      String
+  desription String?
+  position   Int
+  course_id  Int
+  course     Course    @relation(fields: [course_id], references: [id])
+  contents   Content[]
 
   @@map("modules")
 }

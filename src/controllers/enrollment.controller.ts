@@ -113,3 +113,14 @@ export const getEnrolledCoursesByUserId = async (
         next(error);
     }
 };
+
+
+export const getAllEnrollments = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const enrollments = await prismaClient.enrollment.findMany({});
+
+        sendResponse(res, 200, "Enrollment fetch successfully!", enrollments)
+    } catch (error: any) {
+        next(error);
+    }
+}
