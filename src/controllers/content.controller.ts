@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { sendResponse } from "../utils/response";
 import { prismaClient } from "../utils/prismaClient";
 import { ContentSchema } from "../validators/schema";
+import { AppError } from "../utils/app-error";
 
 const parseId = (idParam: string | undefined): number | null => {
     if (!idParam) return null;
@@ -158,6 +159,48 @@ export const deleteContent = async (
 
     } catch (error) {
         console.error("[deleteContent] Error:", error);
+        next(error);
+    }
+};
+
+export const completeContentByStudent = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const user = req.user;
+        const userId = user?.id;
+
+        if (!userId) {
+            throw new AppError("Unauthorized: User not found in request.", 401);
+        }
+
+        const { content_id } = req.body;
+        if (!content_id || typeof content_id !== 'number') {
+            throw new AppError("Invalid or missing 'content_id' in request body.", 400);
+        }
+
+        const existingProgress = await prismaClient.userContentProgress.findUnique({
+            where: {
+                user_id_content_id: {
+                    user_id: userId,
+                    content_id: content_id,
+                },
+            },
+        });
+
+        if (existingProgress) {
+            throw new AppError("Content progress already recorded.", 409); // Conflict
+        }
+
+        const contentData = await prismaClient.userContentProgress.create({
+            data: {
+                user_id: userId,
+                content_id,
+                is_completed: true,
+            },
+        });
+
+        sendResponse(res, 201, "Content progress created successfully!", contentData);
+    } catch (error) {
+        console.error("[completeContentByStudent] Error:", error);
         next(error);
     }
 };

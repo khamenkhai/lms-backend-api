@@ -24,6 +24,7 @@ model User {
   cart              UserCart[]
   wish_lists        Wishlist[]
   certificates      Certificate[]
+  moduleProgress    UserModuleProgress[]
 
   @@map("users")
 }
@@ -97,13 +98,14 @@ model Course {
 }
 
 model Module {
-  id         Int       @id @default(autoincrement())
-  title      String
-  desription String?
-  position   Int
-  course_id  Int
-  course     Course    @relation(fields: [course_id], references: [id])
-  contents   Content[]
+  id                     Int                  @id @default(autoincrement())
+  title                  String
+  desription             String?
+  position               Int
+  course_id              Int
+  course                 Course               @relation(fields: [course_id], references: [id])
+  contents               Content[]
+  user_module_progresses UserModuleProgress[]
 
   @@map("modules")
 }
@@ -172,6 +174,7 @@ model UserContentProgress {
   content_id   Int
   content      Content @relation(fields: [content_id], references: [id])
 
+  @@unique([user_id, content_id])
   @@map("content_progresses")
 }
 
@@ -295,4 +298,17 @@ model Certificate {
 
   @@unique([user_id, course_id])
   @@map("certificates")
+}
+
+model UserModuleProgress {
+  id                 Int      @id @default(autoincrement())
+  user               User     @relation(fields: [user_id], references: [id])
+  user_id            Int
+  module             Module   @relation(fields: [module_id], references: [id])
+  module_id          Int
+  isCompleted        Boolean
+  updatedAt          DateTime @updatedAt
+
+  @@unique([user_id, module_id]) // optional: ensure one entry per user/module
+  @@map("user_module_progress")
 }

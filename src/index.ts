@@ -13,6 +13,7 @@ import quizRoutes from "./routes/quizz.route";
 import questionAnswerRoutes from "./routes/quizzAnswer.route";
 import cors from 'cors';
 import categoryRoutes from "./routes/category.route";
+import progressRoutes from "./routes/progress.route";
 
 // Load environment variables
 dotenv.config();
@@ -42,6 +43,7 @@ app.use(enrollmentRoutes);
 app.use(quizRoutes);
 app.use(categoryRoutes);
 app.use(questionAnswerRoutes);
+app.use(progressRoutes);
 
 
 // Define a basic route with typed req/res

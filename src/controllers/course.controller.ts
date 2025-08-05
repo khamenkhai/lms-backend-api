@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { sendResponse } from "../utils/response";
 import { prismaClient } from "../utils/prismaClient";
 import { CourseSchema } from "../validators/schema";
+import { AppError } from "../utils/app-error";
 
 const parseId = (idParam: string | undefined): number | null => {
     if (!idParam) return null;
@@ -81,8 +82,8 @@ export const getCourseById = async (
                         email: true,
                     },
                 },
-                modules : true,
-                enrollments : true,
+                modules: true,
+                enrollments: true,
             },
         });
 
@@ -173,3 +174,62 @@ export const deleteCourse = async (
         next(error);
     }
 };
+
+
+export const getMyCourses = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+        const user = req?.user;
+        const userId = user?.id;
+
+        if (!user) {
+            next(new AppError("User not found!", 404));
+        }
+        const courses = await prismaClient.course.findMany({
+            where: {
+                enrollments: {
+                    some: {
+                        user_id: userId
+                    },
+                },
+            },
+            include: {
+                category: true,
+                instructor: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+                modules: {
+                    include: {
+                        user_module_progresses: {
+                            where: { user_id: userId },
+                            select: {
+                                progressPercentage: true,
+                                isCompleted: true,
+                                updatedAt: true,
+                            },
+                        },
+                        contents: {
+                            include: {
+                                contentProgresses: {
+                                    where: {
+                                        user_id: userId
+                                    }
+                                },
+                            }
+                        },
+                    },
+                },
+            },
+        });
+        sendResponse(res, 200, "Course fetched successfully!", courses);
+    }
+
+    catch (error: any) {
+        console.error("[deleteCourse] Error:", error);
+        next(error);
+    }
+}

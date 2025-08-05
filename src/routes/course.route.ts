@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createCourse, deleteCourse, getCourseById, getCourses, updateCourse } from "../controllers/course.controller";
+import { createCourse, deleteCourse, getCourseById, getCourses, getMyCourses, updateCourse } from "../controllers/course.controller";
 import authMiddleware, { authorizeRoles } from "../middlewares/authMiddleware";
 
 const courseRoutes = Router();
@@ -9,5 +9,6 @@ courseRoutes.get("/courses", authMiddleware, getCourses);
 courseRoutes.get("/courses/:id", getCourseById);
 courseRoutes.put("/courses/:id", authMiddleware, authorizeRoles("admin"), updateCourse);
 courseRoutes.delete("/courses:id", authMiddleware, authorizeRoles("admin"), deleteCourse);
+courseRoutes.get("/my-courses", authMiddleware, getMyCourses);
 
 export default courseRoutes;
