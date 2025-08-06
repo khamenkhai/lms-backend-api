@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { prismaClient } from "../utils/prismaClient";
 import { sendResponse } from "../utils/response";
-import { questionSchema, questionUpdateSchema, } from "../validators/quizz";
+import { questionSchema, questionUpdateSchema, } from "../validators/quizz-schema";
 
 export const addQuestion = async (
   req: Request,
@@ -13,12 +13,6 @@ export const addQuestion = async (
 
     // ✅ Validate request body using Zod
     const parsed = questionSchema.parse(req.body);
-    // if (!parsed.success) {
-    //   return res.status(400).json({
-    //     message: "Validation failed",
-    //     errors: parsed.error.flatten(),
-    //   });
-    // }
 
     const { question_text, type, answers } = parsed;
 

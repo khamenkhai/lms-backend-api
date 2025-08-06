@@ -81,6 +81,7 @@ export const getCourseProgress = async (req: Request, res: Response, next: NextF
             throw new AppError("Not enrollment found!", 400);
         }
 
+
         const courseModules = await prismaClient.module.findMany({
             where: {
                 course_id: course_id
@@ -89,6 +90,9 @@ export const getCourseProgress = async (req: Request, res: Response, next: NextF
                 user_module_progresses: {
                     where: {
                         user_id: userId,
+                        id: {
+
+                        }
                     },
                 },
             },
@@ -102,11 +106,18 @@ export const getCourseProgress = async (req: Request, res: Response, next: NextF
 
         const progressPercentage = totalModules === 0 ? 0 : (completedCount / totalModules) * 100;
 
+        // Filter only NOT COMPLETED modules
+        const incompleteModules = courseModules.filter(module =>
+            module.user_module_progresses.length === 0 ||
+            !module.user_module_progresses[0].isCompleted
+        );
+
+
         const responseData = {
             totalModules,
             completedCount,
             progressPercentage,
-            courseModules, // optional: you can include this or just summary
+            incompleteModules, // optional: you can include this or just summary
         };
 
         sendResponse(res, 200, "Course progress fetched successfully", responseData);

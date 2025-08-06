@@ -1,19 +1,5 @@
 import { z } from "zod";
 
-export const CourseSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  description: z.string().optional(),
-  price: z.number().int().nonnegative("Price must be a non-negative integer"),
-  level: z.string().min(1, "Level is required"), // You can use z.enum if level is restricted
-  language: z.string().min(1, "Language is required"),
-  duration: z.string().min(1, "Duration is required"),
-  total_students: z.number().int().nonnegative().optional(), // optional for input; default is 0 in DB
-  requirements: z.string().min(1, "Requirements are required"),
-  learning_outcomes: z.string().min(1, "Learning outcomes are required"),
-  category_id: z.number().int().positive("Category ID must be a positive integer"),
-  instructor_id: z.number().int().positive("Instructor ID must be a positive integer"),
-});
-
 export const ModuleSchema = z.object({
   title: z.string().min(1, "Title is required"),
   position: z.number().int().nonnegative("Position must be a non-negative integer"),

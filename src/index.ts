@@ -2,7 +2,6 @@ import express, { Application, Request, Response } from "express";
 import dotenv from "dotenv";
 import { AppError } from "./utils/app-error";
 import { errorHandler } from "./middlewares/errorHandler";
-// import categoryRoutes from "./routes/category.route";
 import authRoutes from "./routes/auth.route";
 import courseRoutes from "./routes/course.route";
 import moduleRoutes from "./routes/module.route";
@@ -14,6 +13,9 @@ import questionAnswerRoutes from "./routes/quizzAnswer.route";
 import cors from 'cors';
 import categoryRoutes from "./routes/category.route";
 import progressRoutes from "./routes/progress.route";
+import cartRoutes from "./routes/cart.route";
+import wishlistRoutes from "./routes/wishlist.route";
+import quizzAttempRoutes from "./routes/quizz-attemp.route";
 
 // Load environment variables
 dotenv.config();
@@ -44,6 +46,9 @@ app.use(quizRoutes);
 app.use(categoryRoutes);
 app.use(questionAnswerRoutes);
 app.use(progressRoutes);
+app.use(cartRoutes);
+app.use(wishlistRoutes);
+app.use(quizzAttempRoutes);
 
 
 // Define a basic route with typed req/res
