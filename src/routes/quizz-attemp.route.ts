@@ -1,5 +1,5 @@
 import { Router } from "express";
-import authMiddleware from "../middlewares/authMiddleware"; // optional, for protected route
+import authMiddleware from "../middlewares/auth-middleware"; // optional, for protected route
 import { submitQuizAttempt } from "../controllers/quizz-attemps.controller";
 
 const quizzAttempRoutes = Router();

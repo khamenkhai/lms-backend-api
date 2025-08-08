@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { getCourseProgress, getMyModuleProgress } from "../controllers/progress.controller";
-import authMiddleware from "../middlewares/authMiddleware";
+import authMiddleware from "../middlewares/auth-middleware";
 
 const progressRoutes = Router();
 

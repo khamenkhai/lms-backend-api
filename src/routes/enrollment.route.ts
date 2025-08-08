@@ -1,5 +1,5 @@
 import { Router } from "express";
-import authMiddleware, { authorizeRoles } from "../middlewares/authMiddleware";
+import authMiddleware, { authorizeRoles } from "../middlewares/auth-middleware";
 import { createEnrollment, getAllEnrollments, getEnrolledCoursesByUserId } from "../controllers/enrollment.controller";
 
 const enrollmentRoutes = Router();

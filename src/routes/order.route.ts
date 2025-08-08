@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { createOrder, getAllOrders } from "../controllers/order.controller";
-import authMiddleware, { authorizeRoles } from "../middlewares/authMiddleware";
+import authMiddleware, { authorizeRoles } from "../middlewares/auth-middleware";
 
 const orderRoutes = Router();
 

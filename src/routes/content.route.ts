@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { completeContentByStudent, createContent, deleteContent, getContentById, getContentsByModule, updateContent } from "../controllers/content.controller";
-import authMiddleware, { authorizeRoles } from "../middlewares/authMiddleware";
+import authMiddleware, { authorizeRoles } from "../middlewares/auth-middleware";
 
 const contentRoutes = Router();
 

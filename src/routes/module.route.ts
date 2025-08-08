@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { completeModuleByStudent, createModule, deleteModules, getModulesByCourse, getModulesById, updateModules } from "../controllers/module.controller";
-import authMiddleware from "../middlewares/authMiddleware";
+import authMiddleware from "../middlewares/auth-middleware";
 
 const moduleRoutes = Router();
 

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import authMiddleware from "../middlewares/authMiddleware";
+import authMiddleware from "../middlewares/auth-middleware";
 import { addCourseToCart } from "../controllers/cart.controller";
 
 const cartRoutes = Router();

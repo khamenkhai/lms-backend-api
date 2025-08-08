@@ -6,7 +6,7 @@ import {
   updateQuiz,
   deleteQuiz,
 } from "../controllers/quizz.controller";
-import authMiddleware from "../middlewares/authMiddleware";
+import authMiddleware from "../middlewares/auth-middleware";
 
 const quizRoutes = Router();
 

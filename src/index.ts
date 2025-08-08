@@ -1,7 +1,7 @@
 import express, { Application, Request, Response } from "express";
 import dotenv from "dotenv";
 import { AppError } from "./utils/app-error";
-import { errorHandler } from "./middlewares/errorHandler";
+import { errorHandler } from "./middlewares/error-handler";
 import authRoutes from "./routes/auth.route";
 import courseRoutes from "./routes/course.route";
 import moduleRoutes from "./routes/module.route";
