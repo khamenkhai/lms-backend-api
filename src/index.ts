@@ -1,7 +1,9 @@
 import express, { Application, Request, Response } from "express";
 import dotenv from "dotenv";
+import cors from "cors";
 import { AppError } from "./utils/app-error";
 import { errorHandler } from "./middlewares/error-handler";
+// import categoryRoutes from "./routes/category.route";
 import authRoutes from "./routes/auth.route";
 import courseRoutes from "./routes/course.route";
 import moduleRoutes from "./routes/module.route";
@@ -10,12 +12,8 @@ import contentRoutes from "./routes/content.route";
 import enrollmentRoutes from "./routes/enrollment.route";
 import quizRoutes from "./routes/quizz.route";
 import questionAnswerRoutes from "./routes/quizzAnswer.route";
-import cors from 'cors';
 import categoryRoutes from "./routes/category.route";
 import progressRoutes from "./routes/progress.route";
-import cartRoutes from "./routes/cart.route";
-import wishlistRoutes from "./routes/wishlist.route";
-import quizzAttempRoutes from "./routes/quizz-attemp.route";
 
 // Load environment variables
 dotenv.config();
@@ -23,32 +21,30 @@ dotenv.config();
 // Create the Express application
 const app: Application = express();
 
-app.use(cors({
-  origin: '*', // or 'http://localhost:5000'
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
-
-
 // Define port and app name from environment variables
 const PORT: number = parseInt(process.env.PORT || "5000", 10);
 const APP_NAME: string = process.env.APP_NAME || "MyApp";
 
 app.use(express.json());
 
+// Allow Flutter Web requests
+app.use(cors({
+  origin: '*', // replace with your Flutter Web dev server URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true, // only if you use cookies/auth
+}));
+
 app.use(authRoutes);
 app.use(courseRoutes);
 app.use(moduleRoutes);
+app.use(categoryRoutes);
 app.use(orderRoutes);
 app.use(contentRoutes);
 app.use(enrollmentRoutes);
 app.use(quizRoutes);
-app.use(categoryRoutes);
 app.use(questionAnswerRoutes);
 app.use(progressRoutes);
-app.use(cartRoutes);
-app.use(wishlistRoutes);
-app.use(quizzAttempRoutes);
 
 
 // Define a basic route with typed req/res
@@ -78,14 +74,11 @@ function getLocalIpAddress(): string {
   return "local-ip-address";
 }
 
-app.listen(PORT, "192.168.50.21", (): void => {
+app.listen(PORT, "192.168.100.57", (): void => {
   console.log(`🚀 ${APP_NAME} is running at http://localhost:${PORT}`);
   console.log(
     `🚀 Also accessible on your local network at http://${getLocalIpAddress()}:${PORT}`
   );
 });
 
-// Start the server
-// app.listen(PORT, (): void => {
-//   console.log(`🚀 ${APP_NAME} is running at http://localhost:${PORT}`);
-// });
+

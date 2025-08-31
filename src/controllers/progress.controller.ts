@@ -44,7 +44,7 @@ export const getMyModuleProgress = async (req: Request, res: Response, next: Nex
             totalContents,
             completedCount,
             progressPercentage,
-            moduleContents, // optional: you can include this or just summary
+            // moduleContents, // optional: you can include this or just summary
         };
 
         sendResponse(res, 200, "Module content progress fetched successfully", responseData);
@@ -117,7 +117,7 @@ export const getCourseProgress = async (req: Request, res: Response, next: NextF
             totalModules,
             completedCount,
             progressPercentage,
-            incompleteModules, // optional: you can include this or just summary
+            // incompleteModules, // optional: you can include this or just summary
         };
 
         sendResponse(res, 200, "Course progress fetched successfully", responseData);

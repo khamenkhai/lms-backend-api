@@ -234,7 +234,7 @@ export const completeModuleByStudent = async (req: Request, res: Response, next:
                 user_id: userId,
                 module_id: moduleId,
                 isCompleted: true,
-                progressPercentage: 100,
+                // progressPercentage: 100,
             },
         });
 

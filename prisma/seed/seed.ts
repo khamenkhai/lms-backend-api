@@ -108,7 +108,7 @@ async function seedPaymentMethods() {
 
 async function main() {
   // await seedAdminUser();
-  // await seedCategories();
+  await seedCategories();
   await seedPaymentMethods();
 }
 
