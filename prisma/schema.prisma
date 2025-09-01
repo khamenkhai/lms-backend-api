@@ -9,22 +9,30 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model UserOTP {
+  id        Int      @id @default(autoincrement())
+  email     String
+  otp       String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}
+
 model User {
-  id                Int                   @id @default(autoincrement())
-  name              String
-  email             String                @unique
-  password          String
-  role              UserRole              @default(student)
-  enrollments       Enrollment[]
-  contentProgresses UserContentProgress[]
-  reviews           Review[]
-  userQuizAttempts  UserQuizAttempt[]
-  orders            Order[]
-  courses           Course[]
-  cart              UserCart[]
-  wish_lists        Wishlist[]
-  certificates      Certificate[]
-  moduleProgress    UserModuleProgress[]
+  id                    Int                   @id @default(autoincrement())
+  name                  String
+  email                 String                @unique
+  password              String
+  role                  UserRole              @default(student)
+  enrollments           Enrollment[]
+  userContentProgresses UserContentProgress[]
+  reviews               Review[]
+  userQuizAttempts      UserQuizAttempt[]
+  orders                Order[]
+  courses               Course[]
+  cart                  UserCart[]
+  wish_lists            Wishlist[]
+  certificates          Certificate[]
+  moduleProgress        UserModuleProgress[]
 
   @@map("users")
 }
@@ -56,6 +64,7 @@ model Enrollment {
   user                User      @relation(fields: [user_id], references: [id])
   course              Course    @relation(fields: [course_id], references: [id])
 
+  // @@unique([user_id, course_id])
   @@map("enrollments")
 }
 
@@ -111,17 +120,17 @@ model Module {
 }
 
 model Content {
-  id                Int                   @id @default(autoincrement())
-  title             String
-  content_url       String //video, or image url
-  content_type      ContentType
-  duration          String
-  position          Int
-  module_id         Int
-  module            Module                @relation(fields: [module_id], references: [id])
-  contentProgresses UserContentProgress[]
-  reviews           Review[]
-  quiz              Quiz?
+  id                    Int                   @id @default(autoincrement())
+  title                 String
+  content_url           String //video, or image url
+  content_type          ContentType
+  duration              String
+  position              Int
+  module_id             Int
+  module                Module                @relation(fields: [module_id], references: [id])
+  userContentProgresses UserContentProgress[]
+  reviews               Review[]
+  quiz                  Quiz?
 
   @@map("contents")
 }
@@ -218,7 +227,7 @@ model UserQuizAnswer {
   question_id Int
   answer_id   Int? // nullable if no answer selected
   is_correct  Boolean
-  answered_at DateTime
+  answered_at DateTime        @default(now())
   attempt     UserQuizAttempt @relation(fields: [attempt_id], references: [id])
   question    Question        @relation(fields: [question_id], references: [id])
   answer      QuizzAnswer?    @relation(fields: [answer_id], references: [id])
@@ -301,13 +310,13 @@ model Certificate {
 }
 
 model UserModuleProgress {
-  id                 Int      @id @default(autoincrement())
-  user               User     @relation(fields: [user_id], references: [id])
-  user_id            Int
-  module             Module   @relation(fields: [module_id], references: [id])
-  module_id          Int
-  isCompleted        Boolean
-  updatedAt          DateTime @updatedAt
+  id          Int      @id @default(autoincrement())
+  user        User     @relation(fields: [user_id], references: [id])
+  user_id     Int
+  module      Module   @relation(fields: [module_id], references: [id])
+  module_id   Int
+  isCompleted Boolean
+  updatedAt   DateTime @updatedAt
 
   @@unique([user_id, module_id]) // optional: ensure one entry per user/module
   @@map("user_module_progress")
