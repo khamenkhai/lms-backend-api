@@ -1,12 +1,16 @@
 import { Router } from "express";
-import { createModule, deleteModules, getModulesByCourse, getModulesById, updateModules } from "../controllers/module.controller";
+import { completeModuleByStudent, createModule, deleteModules, getModulesByCourse, getModulesById, updateModules } from "../controllers/module.controller";
+import authMiddleware from "../middlewares/auth-middleware";
 
 const moduleRoutes = Router();
 
 moduleRoutes.post("/modules", createModule);
-moduleRoutes.get("/modules/:courseId", getModulesByCourse);
+moduleRoutes.get("/course-module/:courseId", getModulesByCourse);
 moduleRoutes.get("/modules/:id", getModulesById);
 moduleRoutes.put("/modules/:id", updateModules);
-moduleRoutes.delete("/modules:id", deleteModules);
+moduleRoutes.delete("/modules/:id", deleteModules);
+
+// complete module
+moduleRoutes.post("/complete-module", authMiddleware , completeModuleByStudent)
 
 export default moduleRoutes;

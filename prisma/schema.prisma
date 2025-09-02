@@ -9,19 +9,30 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model UserOTP {
+  id        Int      @id @default(autoincrement())
+  email     String
+  otp       String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}
+
 model User {
-  id                Int                   @id @default(autoincrement())
-  name              String
-  email             String                @unique
-  password          String
-  role              UserRole              @default(student)
-  enrollments       Enrollment[]
-  contentProgresses UserContentProgress[]
-  reviews           Review[]
-  userQuizAttempts  UserQuizAttempt[]
-  orders            Order[]
-  courses           Course[]
-  cart              UserCart[]
+  id                    Int                   @id @default(autoincrement())
+  name                  String
+  email                 String                @unique
+  password              String
+  role                  UserRole              @default(student)
+  enrollments           Enrollment[]
+  userContentProgresses UserContentProgress[]
+  reviews               Review[]
+  userQuizAttempts      UserQuizAttempt[]
+  orders                Order[]
+  courses               Course[]
+  cart                  UserCart[]
+  wish_lists            Wishlist[]
+  certificates          Certificate[]
+  moduleProgress        UserModuleProgress[]
 
   @@map("users")
 }
@@ -53,6 +64,7 @@ model Enrollment {
   user                User      @relation(fields: [user_id], references: [id])
   course              Course    @relation(fields: [course_id], references: [id])
 
+  // @@unique([user_id, course_id])
   @@map("enrollments")
 }
 
@@ -69,52 +81,56 @@ model UserCart {
 }
 
 model Course {
-  id                Int          @id @default(autoincrement())
-  title             String       @unique
+  id                Int           @id @default(autoincrement())
+  title             String        @unique
+  imageUrl          String?
   description       String?
   price             Int
   level             String
   language          String
   duration          String
-  total_students    Int          @default(0)
+  total_students    Int           @default(0)
   requirements      String
   learning_outcomes String
   category_id       Int
-  category          Category     @relation(fields: [category_id], references: [id])
+  category          Category      @relation(fields: [category_id], references: [id])
   modules           Module[]
   enrollments       Enrollment[]
   orders            Order[]
   instructor_id     Int
-  instructor        User         @relation(fields: [instructor_id], references: [id])
-  userCart          UserCart[]
+  instructor        User          @relation(fields: [instructor_id], references: [id])
+  user_cart         UserCart[]
+  wish_list         Wishlist[]
+  certificates      Certificate[]
 
   @@map("courses")
 }
 
 model Module {
-  id        Int       @id @default(autoincrement())
-  title     String
-  position  Int
-  course_id Int
-  course    Course    @relation(fields: [course_id], references: [id])
-  contents  Content[]
+  id                     Int                  @id @default(autoincrement())
+  title                  String
+  desription             String?
+  position               Int
+  course_id              Int
+  course                 Course               @relation(fields: [course_id], references: [id])
+  contents               Content[]
+  user_module_progresses UserModuleProgress[]
 
   @@map("modules")
 }
 
 model Content {
-  id                Int                   @id @default(autoincrement())
-  title             String
-  type              String //video, article, quizz
-  content_url       String //video, or image url
-  content_type      ContentType
-  duration          String
-  position          Int
-  module_id         Int
-  module            Module                @relation(fields: [module_id], references: [id])
-  quizzes           Quiz[] // Renamed from "quizzs"
-  contentProgresses UserContentProgress[]
-  reviews           Review[]
+  id                    Int                   @id @default(autoincrement())
+  title                 String
+  content_url           String //video, or image url
+  content_type          ContentType
+  duration              String
+  position              Int
+  module_id             Int
+  module                Module                @relation(fields: [module_id], references: [id])
+  userContentProgresses UserContentProgress[]
+  reviews               Review[]
+  quiz                  Quiz?
 
   @@map("contents")
 }
@@ -122,7 +138,7 @@ model Content {
 model Quiz {
   id               Int               @id @default(autoincrement())
   title            String
-  content_id       Int
+  content_id       Int               @unique
   content          Content           @relation(fields: [content_id], references: [id])
   questions        Question[] // Remove onDelete from here
   userQuizAttempts UserQuizAttempt[]
@@ -146,6 +162,7 @@ model QuizzAnswer {
   id              Int              @id @default(autoincrement())
   answer_text     String
   question_id     Int
+  is_correct      Boolean          @default(false)
   question        Question         @relation(fields: [question_id], references: [id], onDelete: Cascade) // Add onDelete here
   userQuizAnswers UserQuizAnswer[]
 
@@ -166,6 +183,7 @@ model UserContentProgress {
   content_id   Int
   content      Content @relation(fields: [content_id], references: [id])
 
+  @@unique([user_id, content_id])
   @@map("content_progresses")
 }
 
@@ -209,12 +227,24 @@ model UserQuizAnswer {
   question_id Int
   answer_id   Int? // nullable if no answer selected
   is_correct  Boolean
-  answered_at DateTime
+  answered_at DateTime        @default(now())
   attempt     UserQuizAttempt @relation(fields: [attempt_id], references: [id])
   question    Question        @relation(fields: [question_id], references: [id])
   answer      QuizzAnswer?    @relation(fields: [answer_id], references: [id])
 
   @@map("user_quiz_answers")
+}
+
+model Wishlist {
+  id        Int      @id @default(autoincrement())
+  user_id   Int
+  course_id Int
+  added_at  DateTime @default(now())
+  user      User     @relation(fields: [user_id], references: [id])
+  course    Course   @relation(fields: [course_id], references: [id])
+
+  @@unique([user_id, course_id])
+  @@map("wishlists")
 }
 
 model Order {
@@ -264,4 +294,30 @@ enum ContentType {
   VIDEO
   ARTICLE
   QUIZ
+}
+
+model Certificate {
+  id              Int      @id @default(autoincrement())
+  user_id         Int
+  course_id       Int
+  issued_at       DateTime @default(now())
+  certificate_url String?
+  user            User     @relation(fields: [user_id], references: [id])
+  course          Course   @relation(fields: [course_id], references: [id])
+
+  @@unique([user_id, course_id])
+  @@map("certificates")
+}
+
+model UserModuleProgress {
+  id          Int      @id @default(autoincrement())
+  user        User     @relation(fields: [user_id], references: [id])
+  user_id     Int
+  module      Module   @relation(fields: [module_id], references: [id])
+  module_id   Int
+  isCompleted Boolean
+  updatedAt   DateTime @updatedAt
+
+  @@unique([user_id, module_id]) // optional: ensure one entry per user/module
+  @@map("user_module_progress")
 }

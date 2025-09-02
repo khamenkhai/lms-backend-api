@@ -1,7 +1,8 @@
 import express, { Application, Request, Response } from "express";
 import dotenv from "dotenv";
+import cors from "cors";
 import { AppError } from "./utils/app-error";
-import { errorHandler } from "./middlewares/errorHandler";
+import { errorHandler } from "./middlewares/error-handler";
 // import categoryRoutes from "./routes/category.route";
 import authRoutes from "./routes/auth.route";
 import courseRoutes from "./routes/course.route";
@@ -11,6 +12,9 @@ import contentRoutes from "./routes/content.route";
 import enrollmentRoutes from "./routes/enrollment.route";
 import quizRoutes from "./routes/quizz.route";
 import questionAnswerRoutes from "./routes/quizzAnswer.route";
+import categoryRoutes from "./routes/category.route";
+import progressRoutes from "./routes/progress.route";
+import quizzAttempRoutes from "./routes/quizz-attemp.route";
 
 // Load environment variables
 dotenv.config();
@@ -24,15 +28,27 @@ const APP_NAME: string = process.env.APP_NAME || "MyApp";
 
 app.use(express.json());
 
+// Allow Flutter Web requests
+app.use(
+  cors({
+    origin: "*", // replace with your Flutter Web dev server URL
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true, // only if you use cookies/auth
+  })
+);
+
 app.use(authRoutes);
 app.use(courseRoutes);
 app.use(moduleRoutes);
+app.use(categoryRoutes);
 app.use(orderRoutes);
 app.use(contentRoutes);
 app.use(enrollmentRoutes);
 app.use(quizRoutes);
 app.use(questionAnswerRoutes);
-
+app.use(progressRoutes);
+app.use(quizzAttempRoutes);
 
 // Define a basic route with typed req/res
 app.get("/", (_req: Request, res: Response): void => {
@@ -47,7 +63,6 @@ app.use((_req: Request, _res: Response, next) => {
 // Global error handler
 app.use(errorHandler);
 
-
 // Helper function to get local IP address
 function getLocalIpAddress(): string {
   const interfaces = require("os").networkInterfaces();
@@ -61,14 +76,9 @@ function getLocalIpAddress(): string {
   return "local-ip-address";
 }
 
-// app.listen(PORT, "192.168.100.203", (): void => {
-//   console.log(`🚀 ${APP_NAME} is running at http://localhost:${PORT}`);
-//   console.log(
-//     `🚀 Also accessible on your local network at http://${getLocalIpAddress()}:${PORT}`
-//   );
-// });
-
-// Start the server
-app.listen(PORT, (): void => {
+app.listen(PORT, "192.168.100.57", (): void => {
   console.log(`🚀 ${APP_NAME} is running at http://localhost:${PORT}`);
+  console.log(
+    `🚀 Also accessible on your local network at http://${getLocalIpAddress()}:${PORT}`
+  );
 });

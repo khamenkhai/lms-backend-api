@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { prismaClient } from "../utils/prismaClient";
 import { sendResponse } from "../utils/response";
-import { createQuizSchema } from "../validators/quizz";
+import { createQuizSchema } from "../validators/quizz-schema";
 
 export const createQuiz = async (
     req: Request,
