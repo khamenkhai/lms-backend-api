@@ -15,6 +15,8 @@ model UserOTP {
   otp       String
   createdAt DateTime @default(now())
   expiresAt DateTime
+
+  @@map("user_opts")
 }
 
 model User {
@@ -69,14 +71,13 @@ model Enrollment {
 }
 
 model UserCart {
-  id        Int      @id @default(autoincrement())
   user_id   Int
   course_id Int
   added_at  DateTime @default(now())
   user      User     @relation(fields: [user_id], references: [id])
   course    Course   @relation(fields: [course_id], references: [id])
 
-  @@unique([user_id, course_id])
+  @@id([user_id, course_id]) // composite PK
   @@map("user_carts")
 }
 
@@ -176,14 +177,13 @@ enum QuizzAnswerType {
 }
 
 model UserContentProgress {
-  id           Int     @id @default(autoincrement())
-  is_completed Boolean @default(false)
   user_id      Int
-  user         User    @relation(fields: [user_id], references: [id])
   content_id   Int
+  is_completed Boolean @default(false)
+  user         User    @relation(fields: [user_id], references: [id])
   content      Content @relation(fields: [content_id], references: [id])
 
-  @@unique([user_id, content_id])
+  @@id([user_id, content_id]) // composite PK
   @@map("content_progresses")
 }
 
@@ -236,14 +236,13 @@ model UserQuizAnswer {
 }
 
 model Wishlist {
-  id        Int      @id @default(autoincrement())
   user_id   Int
   course_id Int
   added_at  DateTime @default(now())
   user      User     @relation(fields: [user_id], references: [id])
   course    Course   @relation(fields: [course_id], references: [id])
 
-  @@unique([user_id, course_id])
+  @@id([user_id, course_id]) // composite PK
   @@map("wishlists")
 }
 
@@ -297,7 +296,6 @@ enum ContentType {
 }
 
 model Certificate {
-  id              Int      @id @default(autoincrement())
   user_id         Int
   course_id       Int
   issued_at       DateTime @default(now())
@@ -305,19 +303,18 @@ model Certificate {
   user            User     @relation(fields: [user_id], references: [id])
   course          Course   @relation(fields: [course_id], references: [id])
 
-  @@unique([user_id, course_id])
+  @@id([user_id, course_id]) // composite PK
   @@map("certificates")
 }
 
 model UserModuleProgress {
-  id          Int      @id @default(autoincrement())
-  user        User     @relation(fields: [user_id], references: [id])
   user_id     Int
-  module      Module   @relation(fields: [module_id], references: [id])
   module_id   Int
   isCompleted Boolean
   updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [user_id], references: [id])
+  module      Module   @relation(fields: [module_id], references: [id])
 
-  @@unique([user_id, module_id]) // optional: ensure one entry per user/module
+  @@id([user_id, module_id]) // composite PK
   @@map("user_module_progress")
 }
