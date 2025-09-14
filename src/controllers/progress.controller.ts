@@ -195,7 +195,6 @@ export const completeCourseByStudent = async (
         course_id: course_id,
       },
       data: {
-        progress_percentage: 100.0,
         completed_at: new Date(),
       },
     });
@@ -259,7 +258,7 @@ export const getCourseProgress = async (
         user_module_progresses: {
           where: {
             user_id: userId,
-            id: {},
+         
           },
         },
       },

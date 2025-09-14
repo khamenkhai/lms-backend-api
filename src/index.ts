@@ -3,11 +3,9 @@ import dotenv from "dotenv";
 import cors from "cors";
 import { AppError } from "./utils/app-error";
 import { errorHandler } from "./middlewares/error-handler";
-// import categoryRoutes from "./routes/category.route";
 import authRoutes from "./routes/auth.route";
 import courseRoutes from "./routes/course.route";
 import moduleRoutes from "./routes/module.route";
-import orderRoutes from "./routes/order.route";
 import contentRoutes from "./routes/content.route";
 import enrollmentRoutes from "./routes/enrollment.route";
 import quizRoutes from "./routes/quizz.route";
@@ -42,7 +40,6 @@ app.use(authRoutes);
 app.use(courseRoutes);
 app.use(moduleRoutes);
 app.use(categoryRoutes);
-app.use(orderRoutes);
 app.use(contentRoutes);
 app.use(enrollmentRoutes);
 app.use(quizRoutes);
@@ -76,7 +73,7 @@ function getLocalIpAddress(): string {
   return "local-ip-address";
 }
 
-app.listen(PORT, "192.168.100.57", (): void => {
+app.listen(PORT, "192.168.100.64", (): void => {
   console.log(`🚀 ${APP_NAME} is running at http://localhost:${PORT}`);
   console.log(
     `🚀 Also accessible on your local network at http://${getLocalIpAddress()}:${PORT}`
