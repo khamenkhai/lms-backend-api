@@ -57,14 +57,14 @@ model Category {
 }
 
 model Enrollment {
-  id                  Int       @id @default(autoincrement())
-  enrolled_at         DateTime  @default(now())
-  completed_at        DateTime?
-  access_expires_at   DateTime?
-  user_id             Int
-  course_id           Int
-  user                User      @relation(fields: [user_id], references: [id])
-  course              Course    @relation(fields: [course_id], references: [id])
+  id                Int       @id @default(autoincrement())
+  enrolled_at       DateTime  @default(now())
+  completed_at      DateTime?
+  access_expires_at DateTime?
+  user_id           Int
+  course_id         Int
+  user              User      @relation(fields: [user_id], references: [id])
+  course            Course    @relation(fields: [course_id], references: [id])
 
   @@map("enrollments")
 }
@@ -123,6 +123,7 @@ model Content {
   id                    Int                   @id @default(autoincrement())
   title                 String
   content_url           String //video, or image url
+  description           String                @default("")
   content_type          ContentType
   duration              String
   position              Int

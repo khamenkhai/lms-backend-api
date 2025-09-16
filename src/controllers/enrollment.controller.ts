@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { prismaClient } from "../utils/prismaClient";
 import { sendResponse } from "../utils/response";
-import { EnrollmentSchema } from "../validators/schema";
 import { AppError } from "../utils/app-error";
 import { UserRole } from "../../generated/prisma";
 
@@ -82,6 +81,72 @@ export const getAllEnrollments = async (
     const queryCondition =
       user.role === UserRole.admin ? {} : { user_id: user.id };
 
+    // Fetch enrollments with course modules and user progress
+    const enrollments = await prismaClient.enrollment.findMany({
+      where: queryCondition,
+      include: {
+        user: true,
+        course: {
+          include: {
+            modules: {
+              include: {
+                user_module_progresses: {
+                  where: { user_id: user.id },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const enriched = enrollments.map((enrollment) => {
+      const modules = enrollment.course.modules;
+
+      const totalModules = modules.length;
+      const completedCount = modules.filter(
+        (m) => m.user_module_progresses[0]?.isCompleted
+      ).length;
+
+      const progressPercentage =
+        totalModules === 0 ? 0 : (completedCount / totalModules) * 100;
+
+      return {
+        ...enrollment,
+        progress: {
+          totalModules,
+          completedCount,
+          progressPercentage,
+        },
+      };
+    });
+
+    const message =
+      user.role === UserRole.admin
+        ? "Fetched all enrollments"
+        : "Fetched your enrollments";
+
+    sendResponse(res, 200, message, enriched);
+  } catch (error) {
+    console.error("[getAllEnrollments] Error:", error);
+    next(error);
+  }
+};
+
+export const getAllEnrollments2 = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return next(new AppError("User not found", 401));
+    }
+
+    const queryCondition =
+      user.role === UserRole.admin ? {} : { user_id: user.id };
+
     const enrollments = await prismaClient.enrollment.findMany({
       where: queryCondition,
       include: {
@@ -100,123 +165,3 @@ export const getAllEnrollments = async (
     next(error);
   }
 };
-
-// export const getEnrolledCoursesByUserId = async (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ): Promise<any> => {
-//   try {
-//     const userId = parseInt(req.params.userId);
-
-//     // Check if user exists
-//     const user = await prismaClient.user.findUnique({
-//       where: { id: userId },
-//     });
-//     if (!user) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
-
-//     // Fetch all enrollments with course info
-//     const enrollments = await prismaClient.enrollment.findMany({
-//       where: { user_id: userId },
-//       include: {
-//         user: true,
-//         course: {
-//           include: {
-//             category: true,
-//             modules: {
-//               include: {
-//                 contents: true,
-//               },
-//             },
-//             instructor: {
-//               select: {
-//                 id: true,
-//                 name: true,
-//                 email: true,
-//               },
-//             },
-//           },
-//         },
-//       },
-//     });
-
-//     const enrolledCourses = enrollments.map((e) => e.course);
-
-//     sendResponse(
-//       res,
-//       200,
-//       "Enrolled courses fetched successfully",
-//       enrolledCourses
-//     );
-//   } catch (error) {
-//     console.error("[getEnrolledCoursesByUserId] Error:", error);
-//     next(error);
-//   }
-// };
-
-// export const getAllEnrollments = async (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   try {
-//     // Pagination
-//     const page = parseInt(req.query.page as string) || 1;
-//     const limit = parseInt(req.query.limit as string) || 10;
-//     const skip = (page - 1) * limit;
-
-//     // Search and filters
-//     const search = (req.query.search as string) || "";
-//     const status = req.query.status as string; // "completed" or "in-progress"
-
-//     const whereClause: any = {};
-
-//     // Filter by completion status
-//     if (status === "completed") {
-//       whereClause.completed_at = { not: null };
-//     } else if (status === "in-progress") {
-//       whereClause.completed_at = null;
-//     }
-
-//     // Include relations for searching
-//     const enrollments = await prismaClient.enrollment.findMany({
-//       where: {
-//         ...whereClause,
-//         OR: [
-//           { user: { name: { contains: search, mode: "insensitive" } } },
-//           { course: { title: { contains: search, mode: "insensitive" } } },
-//         ],
-//       },
-//       include: {
-//         user: true,
-//         course: true,
-//       },
-//       skip,
-//       take: limit,
-//       orderBy: { enrolled_at: "desc" },
-//     });
-
-//     // Total count for pagination
-//     const total = await prismaClient.enrollment.count({
-//       where: {
-//         ...whereClause,
-//         OR: [
-//           { user: { name: { contains: search, mode: "insensitive" } } },
-//           { course: { title: { contains: search, mode: "insensitive" } } },
-//         ],
-//       },
-//     });
-
-//     sendResponse(res, 200, "Enrollments fetched successfully!", {
-//       enrollments,
-//       total,
-//       page,
-//       limit,
-//       totalPages: Math.ceil(total / limit),
-//     });
-//   } catch (error: any) {
-//     next(error);
-//   }
-// };

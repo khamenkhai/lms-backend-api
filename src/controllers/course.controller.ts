@@ -243,7 +243,6 @@ export const getMyCourses = async (
             user_module_progresses: {
               where: { user_id: userId },
               select: {
-                // progressPercentage: true,
                 isCompleted: true,
                 updatedAt: true,
               },
