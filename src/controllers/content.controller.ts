@@ -243,15 +243,15 @@ export const completeContentByStudent = async (
       });
 
       // 5️⃣ If all contents are completed, mark module completed
-      if (incompleteCount === 0) {
-        await prismaClient.userModuleProgress.upsert({
-          where: {
-            user_id_module_id: { user_id: userId, module_id: moduleId },
-          },
-          update: { isCompleted: true },
-          create: { user_id: userId, module_id: moduleId, isCompleted: true },
-        });
-      }
+      // if (incompleteCount === 0) {
+      //   await prismaClient.userModuleProgress.upsert({
+      //     where: {
+      //       user_id_module_id: { user_id: userId, module_id: moduleId },
+      //     },
+      //     update: { isCompleted: true },
+      //     create: { user_id: userId, module_id: moduleId, isCompleted: true },
+      //   });
+      // }
     }
 
     sendResponse(

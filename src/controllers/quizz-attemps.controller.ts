@@ -147,13 +147,14 @@ export const submitQuizAttempt = async (
       }
 
       // 4. Update quiz attempt
+      // 4. Update quiz attempt
       const completedAttempt = await tx.userQuizAttempt.update({
         where: {
           id: quizAttempt.id,
         },
         data: {
-          status: "COMPLETED",
-          completed_at: new Date(),
+          status: score >= 70 ? "COMPLETED" : "IN_PROGRESS", // ✅ only set COMPLETED if score >= 70
+          completed_at: score >= 70 ? new Date() : null, // set completed_at only if passed
           score: score,
         },
       });

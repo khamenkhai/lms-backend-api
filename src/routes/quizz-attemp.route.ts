@@ -5,6 +5,6 @@ import { submitQuizAttempt } from "../controllers/quizz-attemps.controller";
 const quizzAttempRoutes = Router();
 
 // Protected route to submit a quiz
-quizzAttempRoutes.post("/submit", authMiddleware, submitQuizAttempt);
+quizzAttempRoutes.post("/student/submit-quizz", authMiddleware, submitQuizAttempt);
 
 export default quizzAttempRoutes;

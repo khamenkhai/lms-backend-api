@@ -1,12 +1,27 @@
 import { Router } from "express";
-import { completeContent, completeCourseByStudent, getCourseProgress, getMyModuleProgress } from "../controllers/progress.controller";
+import {
+  completeContent,
+  getCourseProgress,
+  getMyModuleProgress,
+} from "../controllers/progress.controller";
 import authMiddleware, { authorizeRoles } from "../middlewares/auth-middleware";
 
 const progressRoutes = Router();
 
-progressRoutes.get("/module-progresss", authMiddleware, getMyModuleProgress);
-progressRoutes.post("/complete-content", authMiddleware, completeContent);
-progressRoutes.get("/course-progresss", authMiddleware, getCourseProgress);
-progressRoutes.post("/complete-course", authMiddleware, authorizeRoles("student"), completeCourseByStudent)
+progressRoutes.get(
+  "/student/module-progresss",
+  authMiddleware,
+  getMyModuleProgress
+);
+progressRoutes.post(
+  "/student/complete-content",
+  authMiddleware,
+  completeContent
+);
+progressRoutes.get(
+  "/student/course-progresss",
+  authMiddleware,
+  getCourseProgress
+);
 
 export default progressRoutes;

@@ -5,6 +5,7 @@ import {
   getQuizById,
   updateQuiz,
   deleteQuiz,
+  getQuizByIdStudent,
 } from "../controllers/quizz.controller";
 import authMiddleware from "../middlewares/auth-middleware";
 
@@ -17,7 +18,8 @@ quizRoutes.post("/quizzes", authMiddleware, createQuiz);
 quizRoutes.get("/quizzes", authMiddleware, getAllQuizzes);
 
 // Get a specific quiz by ID
-quizRoutes.get("/quizzes/:id", authMiddleware, getQuizById);
+quizRoutes.get("/admin/quizzes/:id", authMiddleware, getQuizById);
+quizRoutes.get("/student/quizzes/:id", authMiddleware, getQuizByIdStudent);
 
 // Update a quiz by ID
 quizRoutes.put("/quizzes/:id", authMiddleware, updateQuiz);

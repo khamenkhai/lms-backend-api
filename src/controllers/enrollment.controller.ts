@@ -81,7 +81,7 @@ export const getAllEnrollments = async (
     const queryCondition =
       user.role === UserRole.admin ? {} : { user_id: user.id };
 
-    // Fetch enrollments with course modules and user progress
+    // Fetch enrollments with course modules and content progress
     const enrollments = await prismaClient.enrollment.findMany({
       where: queryCondition,
       include: {
@@ -90,8 +90,13 @@ export const getAllEnrollments = async (
           include: {
             modules: {
               include: {
-                user_module_progresses: {
-                  where: { user_id: user.id },
+                contents: {
+                  include: {
+                    userContentProgresses: {
+                      where: { user_id: user.id },
+                      select: { is_completed: true },
+                    },
+                  },
                 },
               },
             },
@@ -103,20 +108,38 @@ export const getAllEnrollments = async (
     const enriched = enrollments.map((enrollment) => {
       const modules = enrollment.course.modules;
 
-      const totalModules = modules.length;
-      const completedCount = modules.filter(
-        (m) => m.user_module_progresses[0]?.isCompleted
-      ).length;
+      let totalContents = 0;
+      let completedContents = 0;
 
-      const progressPercentage =
-        totalModules === 0 ? 0 : (completedCount / totalModules) * 100;
+      const modulesWithProgress = modules.map((module) => {
+        const moduleTotal = module.contents.length;
+        const moduleCompleted = module.contents.filter(
+          (c) => c.userContentProgresses.length > 0 && c.userContentProgresses[0].is_completed
+        ).length;
+
+        totalContents += moduleTotal;
+        completedContents += moduleCompleted;
+
+        return {
+          ...module,
+          progressPercentage: moduleTotal === 0 ? 0 : (moduleCompleted / moduleTotal) * 100,
+        };
+      });
+
+      const courseProgressPercentage =
+        totalContents === 0 ? 0 : (completedContents / totalContents) * 100;
 
       return {
         ...enrollment,
+        course: {
+          ...enrollment.course,
+          modules: modulesWithProgress,
+        },
         progress: {
-          totalModules,
-          completedCount,
-          progressPercentage,
+          totalContents,
+          completedContents,
+          progressPercentage: courseProgressPercentage,
+          isCompleted: courseProgressPercentage === 100,
         },
       };
     });
@@ -132,6 +155,7 @@ export const getAllEnrollments = async (
     next(error);
   }
 };
+
 
 export const getAllEnrollments2 = async (
   req: Request,

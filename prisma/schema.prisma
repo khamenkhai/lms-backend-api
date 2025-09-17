@@ -34,7 +34,7 @@ model User {
   cart                  UserCart[]
   wish_lists            Wishlist[]
   certificates          Certificate[]
-  moduleProgress        UserModuleProgress[]
+  // moduleProgress        UserModuleProgress[]
   wallet                UserWallet?
   walletTransactions    WalletTransaction[]
 
@@ -114,7 +114,6 @@ model Module {
   course_id              Int
   course                 Course               @relation(fields: [course_id], references: [id])
   contents               Content[]
-  user_module_progresses UserModuleProgress[]
 
   @@map("modules")
 }
@@ -291,17 +290,17 @@ model Certificate {
   @@map("certificates")
 }
 
-model UserModuleProgress {
-  user_id     Int
-  module_id   Int
-  isCompleted Boolean
-  updatedAt   DateTime @updatedAt
-  user        User     @relation(fields: [user_id], references: [id])
-  module      Module   @relation(fields: [module_id], references: [id])
+// model UserModuleProgress {
+//   user_id     Int
+//   module_id   Int
+//   isCompleted Boolean
+//   updatedAt   DateTime @updatedAt
+//   user        User     @relation(fields: [user_id], references: [id])
+//   module      Module   @relation(fields: [module_id], references: [id])
 
-  @@id([user_id, module_id]) // composite PK
-  @@map("user_module_progress")
-}
+//   @@id([user_id, module_id]) // composite PK
+//   @@map("user_module_progress")
+// }
 
 model UserWallet {
   id        Int      @id @default(autoincrement())

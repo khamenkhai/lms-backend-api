@@ -98,126 +98,7 @@ export const completeContent = async (
   }
 };
 
-export const completeModule = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<any> => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      throw new AppError("User id not found!", 400);
-    }
-    const { module_id } = req.body;
 
-    await prismaClient.userModuleProgress.upsert({
-      where: {
-        user_id_module_id: {
-          user_id: userId,
-          module_id: module_id,
-        },
-      },
-      create: {
-        user_id: userId,
-        module_id: module_id,
-        isCompleted: true,
-      },
-      update: {
-        isCompleted: true,
-      },
-    });
-
-    res.status(200).json({ message: "Module marked as completed" });
-  } catch (error: any) {
-    next(error);
-  }
-};
-
-export const completeCourseByStudent = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<any> => {
-  try {
-    const { course_id } = req.body;
-    const userId = req.user?.id;
-
-    if (!course_id) {
-      return next(new AppError("Course id is required", 400));
-    }
-
-    const modules = await prismaClient.module.findMany({
-      where: {
-        course_id: course_id,
-      },
-    });
-
-    const userEnrolledData = await prismaClient.enrollment.findFirst({
-      where: {
-        user_id: userId,
-        course_id: course_id,
-      },
-    });
-
-    if (!userEnrolledData) {
-      return next(new AppError("You haven't enrolled this course!", 400));
-    }
-
-    const totalModule = modules.length;
-    const moduleIds = modules.map((c) => c.id);
-
-    if (totalModule === 0) {
-      return res.status(400).json({ message: "This course has no module." });
-    }
-
-    // Step 2: Count how many contents the user completed
-    const completedCount = await prismaClient.userModuleProgress.count({
-      where: {
-        user_id: userId,
-        module_id: { in: moduleIds },
-        isCompleted: true,
-      },
-    });
-
-    // Step 3: If not all completed, reject
-    if (completedCount < totalModule) {
-      return res.status(400).json({
-        message: "User has not completed all modules in the course.",
-        completed: completedCount,
-        total: totalModule,
-      });
-    }
-
-    // Step 4: Update enrollment record
-    const updatedEnrollment = await prismaClient.enrollment.updateMany({
-      where: {
-        user_id: userId,
-        course_id: course_id,
-      },
-      data: {
-        completed_at: new Date(),
-      },
-    });
-
-    const certificate = await prismaClient.certificate.create({
-      data: {
-        user_id: Number(userId),
-        course_id: course_id,
-        certificate_url: "dfdf",
-      },
-    });
-
-    sendJsonResponse({
-      res,
-      statusCode: 200,
-      message: "Course completed successfully",
-      data: updatedEnrollment,
-    });
-  } catch (error: any) {
-    console.error("[completeCourseByStudent] Error:", error);
-    next(error);
-  }
-};
 
 export const getCourseProgress = async (
   req: Request,
@@ -225,77 +106,92 @@ export const getCourseProgress = async (
   next: NextFunction
 ) => {
   try {
-    const user = req.user;
-    const userId = user?.id;
-
+    const userId = req.user?.id;
     if (!userId) {
       throw new AppError("Unauthorized: User not found in request.", 401);
     }
 
     const { course_id } = req.body;
-    if (!course_id) {
+    if (course_id === undefined || course_id === null) {
       throw new AppError("course_id is required", 400);
     }
-
-    const isExist = await prismaClient.enrollment.findFirst({
-      where: {
-        user_id: userId,
-        course_id: course_id,
-      },
-    });
-
-    console.log(` enrollment : ${isExist}`);
-
-    if (!isExist) {
-      throw new AppError("Not enrollment found!", 400);
+    if (typeof course_id !== "number" || !Number.isInteger(course_id)) {
+      throw new AppError("course_id must be an integer", 400);
     }
 
+    // Check enrollment
+    const enrollment = await prismaClient.enrollment.findFirst({
+      where: { user_id: userId, course_id },
+    });
+
+    if (!enrollment) {
+      throw new AppError("No enrollment found for this course.", 400);
+    }
+
+    // Fetch modules and their contents with user content progress
     const courseModules = await prismaClient.module.findMany({
-      where: {
-        course_id: course_id,
-      },
+      where: { course_id },
       include: {
-        user_module_progresses: {
-          where: {
-            user_id: userId,
-         
+        contents: {
+          include: {
+            userContentProgresses: {
+              where: { user_id: userId },
+              select: { is_completed: true },
+            },
           },
         },
       },
     });
 
-    const totalModules = courseModules.length;
+    let totalContents = 0;
+    let completedContents = 0;
 
-    const completedCount = courseModules.filter(
-      (module) =>
-        module.user_module_progresses.length > 0 &&
-        module.user_module_progresses[0].isCompleted
-    ).length;
+    courseModules.forEach((module) => {
+      totalContents += module.contents.length;
+      completedContents += module.contents.filter(
+        (c) => c.userContentProgresses.length > 0 && c.userContentProgresses[0].is_completed
+      ).length;
+    });
 
     const progressPercentage =
-      totalModules === 0 ? 0 : (completedCount / totalModules) * 100;
+      totalContents === 0 ? 0 : (completedContents / totalContents) * 100;
 
-    // Filter only NOT COMPLETED modules
-    const incompleteModules = courseModules.filter(
-      (module) =>
-        module.user_module_progresses.length === 0 ||
-        !module.user_module_progresses[0].isCompleted
-    );
+    // Mark course completed if 100%
+    if (progressPercentage === 100 && !enrollment.completed_at) {
+      await prismaClient.enrollment.update({
+        where: { id: enrollment.id },
+        data: { completed_at: new Date() },
+      });
+    }
 
-    const responseData = {
-      totalModules,
-      completedCount,
+    // --- Certificate generation ---
+    if (progressPercentage === 100) {
+      const existingCertificate = await prismaClient.certificate.findUnique({
+        where: {
+          user_id_course_id: { user_id: userId, course_id },
+        },
+      });
+
+      if (!existingCertificate) {
+        await prismaClient.certificate.create({
+          data: {
+            user_id: userId,
+            course_id,
+            certificate_url: `/certificate/${userId}-${course_id}`, // your route
+          },
+        });
+      }
+    }
+
+    sendResponse(res, 200, "Course progress fetched successfully", {
+      totalContents,
+      completedContents,
       progressPercentage,
-    };
-
-    sendResponse(
-      res,
-      200,
-      "Course progress fetched successfully",
-      responseData
-    );
+      certificateGenerated: progressPercentage === 100,
+    });
   } catch (error) {
-    console.error("[getMyModuleProgress] Error:", error);
+    console.error("[getCourseProgress] Error:", error);
     next(error);
   }
 };
+
