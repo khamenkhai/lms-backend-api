@@ -13,12 +13,19 @@ import questionAnswerRoutes from "./routes/quizzAnswer.route";
 import categoryRoutes from "./routes/category.route";
 import progressRoutes from "./routes/progress.route";
 import quizzAttempRoutes from "./routes/quizz-attemp.route";
+import certificateRoute from "./routes/certificate.route";
+import path from "path";
+import usersRoute from "./routes/user.route";
+import tagRoute from "./routes/tag.route";
 
 // Load environment variables
 dotenv.config();
 
 // Create the Express application
 const app: Application = express();
+
+// Serve public folder
+app.use("/public", express.static(path.join(__dirname, "../public")));
 
 // Define port and app name from environment variables
 const PORT: number = parseInt(process.env.PORT || "5000", 10);
@@ -46,6 +53,9 @@ app.use(quizRoutes);
 app.use(questionAnswerRoutes);
 app.use(progressRoutes);
 app.use(quizzAttempRoutes);
+app.use(certificateRoute);
+app.use(usersRoute);
+app.use(tagRoute);
 
 // Define a basic route with typed req/res
 app.get("/", (_req: Request, res: Response): void => {
@@ -73,7 +83,7 @@ function getLocalIpAddress(): string {
   return "local-ip-address";
 }
 
-app.listen(PORT, "192.168.100.64", (): void => {
+app.listen(PORT, getLocalIpAddress(), (): void => {
   console.log(`🚀 ${APP_NAME} is running at http://localhost:${PORT}`);
   console.log(
     `🚀 Also accessible on your local network at http://${getLocalIpAddress()}:${PORT}`

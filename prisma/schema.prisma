@@ -29,12 +29,10 @@ model User {
   userContentProgresses UserContentProgress[]
   reviews               Review[]
   userQuizAttempts      UserQuizAttempt[]
-  // orders                Order[]
   courses               Course[]
   cart                  UserCart[]
   wish_lists            Wishlist[]
   certificates          Certificate[]
-  // moduleProgress        UserModuleProgress[]
   wallet                UserWallet?
   walletTransactions    WalletTransaction[]
 
@@ -96,24 +94,42 @@ model Course {
   category          Category      @relation(fields: [category_id], references: [id])
   modules           Module[]
   enrollments       Enrollment[]
-  // orders            Order[]
   instructor_id     Int
   instructor        User          @relation(fields: [instructor_id], references: [id])
   user_cart         UserCart[]
   wish_list         Wishlist[]
   certificates      Certificate[]
+  tags              CourseTag[]
 
   @@map("courses")
 }
 
+model Tag {
+  id         Int         @id @default(autoincrement())
+  name       String      @unique
+  courseTags CourseTag[]
+
+  @@map("tags")
+}
+
+model CourseTag {
+  course_id Int
+  tag_id    Int
+  course    Course @relation(fields: [course_id], references: [id])
+  tag       Tag    @relation(fields: [tag_id], references: [id])
+
+  @@id([course_id, tag_id])
+  @@map("course_tags")
+}
+
 model Module {
-  id                     Int                  @id @default(autoincrement())
-  title                  String
-  desription             String?
-  position               Int
-  course_id              Int
-  course                 Course               @relation(fields: [course_id], references: [id])
-  contents               Content[]
+  id         Int       @id @default(autoincrement())
+  title      String
+  desription String?
+  position   Int
+  course_id  Int
+  course     Course    @relation(fields: [course_id], references: [id])
+  contents   Content[]
 
   @@map("modules")
 }
@@ -289,18 +305,6 @@ model Certificate {
   @@id([user_id, course_id]) // composite PK
   @@map("certificates")
 }
-
-// model UserModuleProgress {
-//   user_id     Int
-//   module_id   Int
-//   isCompleted Boolean
-//   updatedAt   DateTime @updatedAt
-//   user        User     @relation(fields: [user_id], references: [id])
-//   module      Module   @relation(fields: [module_id], references: [id])
-
-//   @@id([user_id, module_id]) // composite PK
-//   @@map("user_module_progress")
-// }
 
 model UserWallet {
   id        Int      @id @default(autoincrement())

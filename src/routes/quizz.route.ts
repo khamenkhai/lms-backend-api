@@ -18,7 +18,7 @@ quizRoutes.post("/quizzes", authMiddleware, createQuiz);
 quizRoutes.get("/quizzes", authMiddleware, getAllQuizzes);
 
 // Get a specific quiz by ID
-quizRoutes.get("/admin/quizzes/:id", authMiddleware, getQuizById);
+quizRoutes.get("/quizzes/:id", authMiddleware, getQuizById);
 quizRoutes.get("/student/quizzes/:id", authMiddleware, getQuizByIdStudent);
 
 // Update a quiz by ID

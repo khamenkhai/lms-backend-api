@@ -4,7 +4,84 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Certificate</title>
-  <link rel="stylesheet" href="/css/certificate.css">
+  <style>
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background-color: #f3f4f6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .certificate-container {
+      padding: 20px;
+    }
+
+    .certificate-card {
+      background-color: #ffffff;
+      border: 2px solid #0a84ff;
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 800px;
+      width: 100%;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      text-align: center;
+      position: relative;
+    }
+
+    .certificate-header .logo {
+      width: 80px;
+      margin-bottom: 20px;
+    }
+
+    .certificate-header h1 {
+      font-size: 32px;
+      color: #0a84ff;
+      margin-bottom: 10px;
+    }
+
+    .certificate-body p {
+      font-size: 18px;
+      color: #4b4b4b;
+      margin: 8px 0;
+    }
+
+    .certificate-body h2 {
+      font-size: 28px;
+      color: #111;
+      margin: 10px 0;
+    }
+
+    .certificate-body h3 {
+      font-size: 22px;
+      color: #0a84ff;
+      margin: 10px 0;
+    }
+
+    .certificate-footer {
+      margin-top: 40px;
+    }
+
+    .signatures {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .signature-line {
+      border-top: 1px solid #111;
+      padding-top: 5px;
+      margin-top: 5px;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .certificate-id {
+      font-size: 14px;
+      color: #888;
+    }
+  </style>
 </head>
 <body>
   <div class="certificate-container">
