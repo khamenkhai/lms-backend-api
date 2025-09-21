@@ -3,6 +3,7 @@ import { sendResponse } from "../utils/response";
 import { prismaClient } from "../utils/prismaClient";
 import { ContentSchema } from "../validators/schema";
 import { AppError } from "../utils/app-error";
+import cloudinary from "../utils/cloudinary";
 
 const parseId = (idParam: string | undefined): number | null => {
   if (!idParam) return null;
@@ -16,15 +17,74 @@ export const createContent = async (
   next: NextFunction
 ): Promise<any> => {
   try {
-    const data = ContentSchema.parse(req.body);
+    console.log("📝 [createContent] Parsing FormData...");
 
+    // Manual validation
+    const { title, content_type, duration, position, module_id } = req.body;
+
+    const errors: string[] = [];
+
+    if (!title || typeof title !== "string" || title.trim() === "") {
+      errors.push("Title is required and must be a string");
+    }
+
+    const validTypes = ["VIDEO", "ARTICLE", "QUIZ"];
+    if (!content_type || !validTypes.includes(content_type)) {
+      errors.push(`Content type must be one of: ${validTypes.join(", ")}`);
+    }
+
+    if (duration && !/^\d{1,2}:\d{2}$/.test(duration)) {
+      errors.push("Duration must be in mm:ss or hh:mm format");
+    }
+
+    const positionNum = Number(position);
+    if (!position || isNaN(positionNum) || positionNum < 1) {
+      errors.push("Position is required and must be an integer >= 1");
+    }
+
+    const moduleIdNum = Number(module_id);
+    if (!module_id || isNaN(moduleIdNum) || moduleIdNum < 1) {
+      errors.push("Module ID is required and must be an integer >= 1");
+    }
+
+    if (errors.length > 0) {
+      return res.status(400).json({ errors });
+    }
+
+    console.log("✅ [createContent] Validation passed");
+
+    // Handle file upload
+    let fileUrl = "";
+    if (req.file) {
+      console.log(
+        "📁 [createContent] File detected, uploading to Cloudinary..."
+      );
+      const uploadResult = await cloudinary.uploader.upload(req.file.path, {
+        resource_type: "auto",
+        folder: "contents",
+      });
+      fileUrl = uploadResult.secure_url;
+      console.log("☁️ [createContent] File uploaded:", fileUrl);
+    } else {
+      console.log("📂 [createContent] No file attached.");
+    }
+
+    // Save to DB
     const contentData = await prismaClient.content.create({
-      data: data,
+      data: {
+        title,
+        content_type,
+        duration: duration || null,
+        position: positionNum,
+        module_id: moduleIdNum,
+        content_url: fileUrl,
+      },
     });
 
     sendResponse(res, 201, "Content created successfully!", contentData);
+    console.log("🎉 [createContent] Response sent!");
   } catch (error) {
-    console.error("[createContent] Error:", error);
+    console.error("❌ [createContent] Error:", error);
     next(error);
   }
 };

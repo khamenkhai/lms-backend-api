@@ -140,7 +140,7 @@ model Content {
   content_url           String //video, or image url
   description           String                @default("")
   content_type          ContentType
-  duration              String
+  duration              String?
   position              Int
   module_id             Int
   module                Module                @relation(fields: [module_id], references: [id])

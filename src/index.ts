@@ -32,6 +32,7 @@ const PORT: number = parseInt(process.env.PORT || "5000", 10);
 const APP_NAME: string = process.env.APP_NAME || "MyApp";
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Allow Flutter Web requests
 app.use(
