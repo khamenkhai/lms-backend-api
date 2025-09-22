@@ -195,15 +195,39 @@ export const updateContent = async (
       return res.status(404).json({ message: "Content not found" });
     }
 
+    // Validate body (partial for update)
     const result = ContentSchema.partial().safeParse(req.body);
 
     if (!result.success) {
       return res.status(400).json({ errors: result.error.flatten() });
     }
 
+    let fileUrl = existingContent.content_url;
+
+    // Handle file upload if present
+    if (req.file) {
+      console.log(
+        "📁 [updateContent] New file detected, uploading to Cloudinary..."
+      );
+      const uploadResult = await cloudinary.uploader.upload(req.file.path, {
+        resource_type: "auto",
+        folder: "contents",
+      });
+      fileUrl = uploadResult.secure_url;
+      console.log("☁️ [updateContent] File uploaded:", fileUrl);
+    } else {
+      console.log(
+        "📂 [updateContent] No new file uploaded, keeping existing file."
+      );
+    }
+
+    // Merge updates
     const updatedContent = await prismaClient.content.update({
       where: { id: contentId },
-      data: result.data, // This is the parsed & validated data
+      data: {
+        ...result.data,
+        content_url: fileUrl, // updated only if new file uploaded
+      },
     });
 
     sendResponse(res, 200, "Content updated successfully!", updatedContent);
@@ -289,30 +313,6 @@ export const completeContentByStudent = async (
       where: { id: content_id },
       select: { module_id: true },
     });
-
-    if (content) {
-      const moduleId = content.module_id;
-
-      // 4️⃣ Check if any contents in this module are still incomplete
-      const incompleteCount = await prismaClient.userContentProgress.count({
-        where: {
-          user_id: userId,
-          content: { module_id: moduleId },
-          is_completed: false,
-        },
-      });
-
-      // 5️⃣ If all contents are completed, mark module completed
-      // if (incompleteCount === 0) {
-      //   await prismaClient.userModuleProgress.upsert({
-      //     where: {
-      //       user_id_module_id: { user_id: userId, module_id: moduleId },
-      //     },
-      //     update: { isCompleted: true },
-      //     create: { user_id: userId, module_id: moduleId, isCompleted: true },
-      //   });
-      // }
-    }
 
     sendResponse(
       res,

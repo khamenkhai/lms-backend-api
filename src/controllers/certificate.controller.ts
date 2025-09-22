@@ -22,10 +22,15 @@ export const generateCertificate = async (
     });
 
     const completedContents = await prismaClient.userContentProgress.count({
-      where: { user_id: userId, content: { module: { course_id: enrollment_id } }, is_completed: true },
+      where: {
+        user_id: userId,
+        content: { module: { course_id: enrollment_id } },
+        is_completed: true,
+      },
     });
 
-    const progress = totalContents === 0 ? 0 : (completedContents / totalContents) * 100;
+    const progress =
+      totalContents === 0 ? 0 : (completedContents / totalContents) * 100;
 
     if (progress < 80)
       return next(
@@ -37,25 +42,43 @@ export const generateCertificate = async (
 
     // Check or create certificate placeholder
     let certificate = await prismaClient.certificate.findUnique({
-      where: { user_id_course_id: { user_id: userId, course_id: enrollment_id } },
+      where: {
+        user_id_course_id: { user_id: userId, course_id: enrollment_id },
+      },
     });
 
     if (!certificate) {
       certificate = await prismaClient.certificate.create({
-        data: { user_id: userId, course_id: enrollment_id, certificate_url: "" },
+        data: {
+          user_id: userId,
+          course_id: enrollment_id,
+          certificate_url: "",
+        },
       });
     }
 
     // Push job to async queue
     const userName = req.user?.name || "Anonymous";
-    const courseTitle = (await prismaClient.course.findUnique({
+    const course = await prismaClient.course.findUnique({
       where: { id: enrollment_id },
-    }))?.title || "Untitled Course";
+      include : {
+        instructor : true
+      }
+    });
+
+    if (!course) {
+      next(new AppError("Course not found!"));
+    }
+
+    const instructorName = course?.instructor.name || 'Unknow';
+    const courseTitle = course?.title || '';
+ 
 
     addJob({
       userId,
       courseId: enrollment_id,
       userName,
+      instructorName,
       courseTitle,
     });
 

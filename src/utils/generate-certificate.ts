@@ -10,6 +10,7 @@ interface CertificateJob {
   userId: number;
   courseId: number;
   userName: string;
+  instructorName: string;
   courseTitle: string;
 }
 
@@ -38,16 +39,17 @@ const processQueue = async () => {
 };
 
 const generateCertificate = async (job: CertificateJob) => {
+  const logoPath = path.join(__dirname, "../public/assets/award.png");
   // Render EJS template
   const html = await ejs.renderFile(
     path.join(__dirname, "../ejs/certificate.ejs"),
     {
       user: { name: job.userName },
       course: { title: job.courseTitle },
-      instructor: { name: "John Doe" },
+      instructor: { name: job.instructorName },
       issued_at: new Date(),
       certificate_id: `${job.userId}_${job.courseId}`,
-      logoUrl: "public/assets/award.png",
+      logoUrl: `file://${logoPath}`,
     }
   );
 

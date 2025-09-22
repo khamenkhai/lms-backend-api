@@ -26,7 +26,15 @@ contentRoutes.post(
 contentRoutes.get("/module-contents/:moduleId", getContentsByModule);
 contentRoutes.get("/student/module-contents/:moduleId", getContentsByStudents);
 contentRoutes.get("/contents/:id", getContentById);
-contentRoutes.put("/contents/:id", updateContent);
+
+contentRoutes.put(
+  "/contents/:id",
+  authMiddleware,
+  authorizeRoles("admin"),
+  upload.single("file"),
+  updateContent
+);
+
 contentRoutes.delete("/contents/:id", deleteContent);
 
 // students routes

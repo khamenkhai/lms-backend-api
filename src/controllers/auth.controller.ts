@@ -125,6 +125,86 @@ export const login = catchAsync(
   }
 );
 
+export const sendForgotPasswordOTP = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { email } = req.body;
+
+    if (!email) {
+      throw new AppError("Email is required!", 400);
+    }
+
+    const user = await prismaClient.user.findUnique({ where: { email } });
+    if (!user) {
+      throw new AppError("No account found with this email", 404);
+    }
+
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Save OTP in DB (reuse userOTP table)
+    await prismaClient.userOTP.create({
+      data: {
+        email,
+        otp,
+        expiresAt: new Date(Date.now() + 5 * 60 * 1000), // expires in 5 mins
+      },
+    });
+
+    // Send OTP via email
+    await sendMail({
+      email,
+      subject: "Your Password Reset OTP",
+      template: "otp.ejs",
+      data: { name: user.name, otp },
+    });
+
+    res.status(200).json({
+      status: true,
+      message: "OTP sent to your email. It expires in 5 minutes.",
+    });
+  }
+);
+
+export const resetPasswordWithOTP = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+      throw new AppError("Email, OTP, and new password are required!", 400);
+    }
+
+    const otpRecord = await prismaClient.userOTP.findFirst({
+      where: { email, otp: String(otp) },
+    });
+
+    if (!otpRecord) {
+      throw new AppError("Invalid OTP!", 400);
+    }
+
+    if (otpRecord.expiresAt < new Date()) {
+      throw new AppError("OTP expired. Please request a new one.", 400);
+    }
+
+    // Hash new password
+    const hashedPassword = hashSync(newPassword, 10);
+
+    // Update user password
+    await prismaClient.user.update({
+      where: { email },
+      data: { password: hashedPassword },
+    });
+
+    // Delete OTP record
+    await prismaClient.userOTP.delete({ where: { id: otpRecord.id } });
+
+    res.status(200).json({
+      status: true,
+      message:
+        "Password reset successfully. You can now login with your new password.",
+    });
+  }
+);
+
 export const getProfile = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.user?.id;
