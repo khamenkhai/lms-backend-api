@@ -4,6 +4,59 @@ import { sendResponse } from "../utils/response";
 import { AppError } from "../utils/app-error";
 import { UserRole } from "../../generated/prisma";
 
+export const unenrollFromCourse = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<any> => {
+  try {
+    const { enrollmentId } = req.body;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized user" });
+    }
+
+    if (!enrollmentId) {
+      return res.status(400).json({ message: "enrollmentId is required" });
+    }
+
+    // Find the enrollment (must belong to the user)
+    const existingEnrollment = await prismaClient.enrollment.findUnique({
+      where: { id: enrollmentId },
+    });
+
+    if (!existingEnrollment || existingEnrollment.user_id !== userId) {
+      return res.status(404).json({
+        message: "Enrollment not found or does not belong to you.",
+      });
+    }
+
+    // If already unenrolled
+    if (existingEnrollment.status === "UNENROLLED") {
+      return res.status(400).json({
+        message: "You have already unenrolled from this course.",
+      });
+    }
+
+    // Soft unenroll → update status + set unenrolled_at
+    const unenrollment = await prismaClient.enrollment.update({
+      where: { id: enrollmentId },
+      data: {
+        status: "UNENROLLED",
+        unenrolled_at: new Date(),
+      },
+    });
+
+    sendResponse(res, 200, "You have been unenrolled from the course.", unenrollment);
+  } catch (error) {
+    console.error("[unenrollFromCourse] Error:", error);
+    next(error);
+  }
+};
+
+
+
 export const enrollInCourse = async (
   req: Request,
   res: Response,

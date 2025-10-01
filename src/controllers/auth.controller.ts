@@ -100,11 +100,11 @@ export const login = catchAsync(
 
     const user = await prismaClient.user.findFirst({ where: { email } });
     if (!user) {
-      throw new AppError("Invalid email or password", 401); // More generic message for security
+      throw new AppError("Invalid email", 401); // More generic message for security
     }
 
     if (!compareSync(password, user.password)) {
-      throw new AppError("Invalid email or password", 401);
+      throw new AppError("Invalid password", 401);
     }
 
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, {

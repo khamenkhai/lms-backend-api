@@ -39,7 +39,7 @@ export const getCourses = async (
   try {
     // --- 1. Parse query params ---
     const page = parseInt(req.query.page as string) || 1;
-    const pageSize = parseInt(req.query.pageSize as string) || 10;
+    const pageSize = parseInt(req.query.pageSize as string) || 15;
 
     const categoryId = req.query.categoryId
       ? parseInt(req.query.categoryId as string)
