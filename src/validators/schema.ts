@@ -15,9 +15,8 @@ export const createOrderSchema = z.object({
 
 export const ContentSchema = z.object({
   title: z.string().min(1, "Title is required"),
-  content_url: z.string().url("Must be a valid URL"),
   content_type: z.enum(["VIDEO", "ARTICLE", "QUIZ"]),
-  duration: z.string().regex(/^\d{1,2}:\d{2}$/, "Duration must be in mm:ss or hh:mm format"),
+  duration: z.string().regex(/^\d{1,2}:\d{2}$/, "Duration must be in mm:ss or hh:mm format").optional(),
   position: z.number().int().min(1),
   module_id: z.number().int().min(1)
 });

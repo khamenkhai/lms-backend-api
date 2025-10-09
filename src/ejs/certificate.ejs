@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Certificate</title>
+  <style>
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background-color: #f3f4f6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .certificate-container {
+      padding: 20px;
+    }
+
+    .certificate-card {
+      background-color: #ffffff;
+      border: 2px solid #0a84ff;
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 800px;
+      width: 100%;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      text-align: center;
+      position: relative;
+    }
+
+    .certificate-header .logo {
+      width: 80px;
+      margin-bottom: 20px;
+    }
+
+    .certificate-header h1 {
+      font-size: 32px;
+      color: #0a84ff;
+      margin-bottom: 10px;
+    }
+
+    .certificate-body p {
+      font-size: 18px;
+      color: #4b4b4b;
+      margin: 8px 0;
+    }
+
+    .certificate-body h2 {
+      font-size: 28px;
+      color: #111;
+      margin: 10px 0;
+    }
+
+    .certificate-body h3 {
+      font-size: 22px;
+      color: #0a84ff;
+      margin: 10px 0;
+    }
+
+    .certificate-footer {
+      margin-top: 40px;
+    }
+
+    .signatures {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .signature-line {
+      border-top: 1px solid #111;
+      padding-top: 5px;
+      margin-top: 5px;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .certificate-id {
+      font-size: 14px;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div class="certificate-container">
+    <div class="certificate-card">
+      <div class="certificate-header">
+        <img src="<%= logoUrl %>" alt="Logo" class="logo">
+
+        <h1>Certificate of Completion</h1>
+      </div>
+
+      <div class="certificate-body">
+        <p>This is to certify that</p>
+        <h2><%= user.name %></h2>
+        <p>has successfully completed the course</p>
+        <h3><%= course.title %></h3>
+        <p>on <%= new Date(issued_at).toLocaleDateString() %></p>
+      </div>
+
+      <div class="certificate-footer">
+        <div class="signatures">
+          <div>
+            <p>Instructor</p>
+            <p class="signature-line"><%= instructor.name %></p>
+          </div>
+          <div>
+            <p>Platform</p>
+            <p class="signature-line">KlevaTech</p>
+          </div>
+        </div>
+        <p class="certificate-id">Certificate ID: <%= certificate_id %></p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -81,6 +81,34 @@ export const getQuizById = async (
         next(error);
     }
 };
+export const getQuizByIdStudent = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<any> => {
+    try {
+        const quizId = parseInt(req.params.id);
+
+        const quiz = await prismaClient.quiz.findUnique({
+            where: { id: quizId },
+            include: {
+                content: true,
+                questions: {
+                    include: { answers: true },
+                },
+            },
+        });
+
+        if (!quiz) {
+            return res.status(404).json({ message: "Quiz not found" });
+        }
+
+        sendResponse(res, 200, "Quiz retrieved successfully", quiz);
+    } catch (error) {
+        console.error("[getQuizById] Error:", error);
+        next(error);
+    }
+};
 
 export const updateQuiz = async (
     req: Request,

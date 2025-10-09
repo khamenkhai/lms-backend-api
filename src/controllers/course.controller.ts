@@ -39,7 +39,7 @@ export const getCourses = async (
   try {
     // --- 1. Parse query params ---
     const page = parseInt(req.query.page as string) || 1;
-    const pageSize = parseInt(req.query.pageSize as string) || 10;
+    const pageSize = parseInt(req.query.pageSize as string) || 15;
 
     const categoryId = req.query.categoryId
       ? parseInt(req.query.categoryId as string)
@@ -209,62 +209,4 @@ export const deleteCourse = async (
   }
 };
 
-export const getMyCourses = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const user = req?.user;
-    const userId = user?.id;
-
-    if (!user) {
-      next(new AppError("User not found!", 404));
-    }
-    const courses = await prismaClient.course.findMany({
-      where: {
-        enrollments: {
-          some: {
-            user_id: userId,
-          },
-        },
-      },
-      include: {
-        category: true,
-        instructor: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        modules: {
-          include: {
-            user_module_progresses: {
-              where: { user_id: userId },
-              select: {
-                // progressPercentage: true,
-                isCompleted: true,
-                updatedAt: true,
-              },
-            },
-            contents: {
-              include: {
-                userContentProgresses: {
-                  where: {
-                    user_id: userId,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    });
-    sendResponse(res, 200, "Course fetched successfully!", courses);
-  } catch (error: any) {
-    console.error("[deleteCourse] Error:", error);
-    next(error);
-  }
-};
 

@@ -29,12 +29,12 @@ model User {
   userContentProgresses UserContentProgress[]
   reviews               Review[]
   userQuizAttempts      UserQuizAttempt[]
-  orders                Order[]
   courses               Course[]
   cart                  UserCart[]
   wish_lists            Wishlist[]
   certificates          Certificate[]
-  moduleProgress        UserModuleProgress[]
+  wallet                UserWallet?
+  walletTransactions    WalletTransaction[]
 
   @@map("users")
 }
@@ -55,19 +55,24 @@ model Category {
 }
 
 model Enrollment {
-  id                  Int       @id @default(autoincrement())
-  name                String
-  enrolled_at         DateTime  @default(now())
-  completed_at        DateTime?
-  access_expires_at   DateTime?
-  progress_percentage Int
-  user_id             Int
-  course_id           Int
-  user                User      @relation(fields: [user_id], references: [id])
-  course              Course    @relation(fields: [course_id], references: [id])
+  id                Int              @id @default(autoincrement())
+  enrolled_at       DateTime         @default(now())
+  completed_at      DateTime?
+  access_expires_at DateTime?
+  unenrolled_at     DateTime?
+  status            EnrollmentStatus @default(ACTIVE)
+  user_id           Int
+  course_id         Int
+  user              User             @relation(fields: [user_id], references: [id])
+  course            Course           @relation(fields: [course_id], references: [id])
 
-  // @@unique([user_id, course_id])
   @@map("enrollments")
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  UNENROLLED
 }
 
 model UserCart {
@@ -85,6 +90,7 @@ model Course {
   id                Int           @id @default(autoincrement())
   title             String        @unique
   imageUrl          String?
+  previewUrl        String?
   description       String?
   price             Int
   level             String
@@ -97,25 +103,42 @@ model Course {
   category          Category      @relation(fields: [category_id], references: [id])
   modules           Module[]
   enrollments       Enrollment[]
-  orders            Order[]
   instructor_id     Int
   instructor        User          @relation(fields: [instructor_id], references: [id])
   user_cart         UserCart[]
   wish_list         Wishlist[]
   certificates      Certificate[]
+  tags              CourseTag[]
 
   @@map("courses")
 }
 
+model Tag {
+  id         Int         @id @default(autoincrement())
+  name       String      @unique
+  courseTags CourseTag[]
+
+  @@map("tags")
+}
+
+model CourseTag {
+  course_id Int
+  tag_id    Int
+  course    Course @relation(fields: [course_id], references: [id])
+  tag       Tag    @relation(fields: [tag_id], references: [id])
+
+  @@id([course_id, tag_id])
+  @@map("course_tags")
+}
+
 model Module {
-  id                     Int                  @id @default(autoincrement())
-  title                  String
-  desription             String?
-  position               Int
-  course_id              Int
-  course                 Course               @relation(fields: [course_id], references: [id])
-  contents               Content[]
-  user_module_progresses UserModuleProgress[]
+  id         Int       @id @default(autoincrement())
+  title      String
+  desription String?
+  position   Int
+  course_id  Int
+  course     Course    @relation(fields: [course_id], references: [id])
+  contents   Content[]
 
   @@map("modules")
 }
@@ -124,8 +147,9 @@ model Content {
   id                    Int                   @id @default(autoincrement())
   title                 String
   content_url           String //video, or image url
+  description           String                @default("")
   content_type          ContentType
-  duration              String
+  duration              String?
   position              Int
   module_id             Int
   module                Module                @relation(fields: [module_id], references: [id])
@@ -246,21 +270,6 @@ model Wishlist {
   @@map("wishlists")
 }
 
-model Order {
-  id         Int         @id @default(autoincrement())
-  status     OrderStatus @default(pending)
-  amount     Int
-  created_at DateTime    @default(now())
-  updated_at DateTime    @updatedAt
-  user_id    Int
-  user       User        @relation(fields: [user_id], references: [id])
-  course_id  Int
-  course     Course      @relation(fields: [course_id], references: [id])
-  payment    Payment?
-
-  @@map("orders")
-}
-
 enum OrderStatus {
   pending
   paid
@@ -275,7 +284,6 @@ model Payment {
   provider_transaction_id String
   amount                  Int
   paid_at                 DateTime      @default(now())
-  order                   Order         @relation(fields: [order_id], references: [id])
   paymentMethod           PaymentMethod @relation(fields: [payment_method_id], references: [id])
 
   @@map("payments")
@@ -307,14 +315,29 @@ model Certificate {
   @@map("certificates")
 }
 
-model UserModuleProgress {
-  user_id     Int
-  module_id   Int
-  isCompleted Boolean
-  updatedAt   DateTime @updatedAt
-  user        User     @relation(fields: [user_id], references: [id])
-  module      Module   @relation(fields: [module_id], references: [id])
+model UserWallet {
+  id        Int      @id @default(autoincrement())
+  user_id   Int      @unique
+  balance   Int      @default(0) // store currency in integer units (like cents)
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [user_id], references: [id])
 
-  @@id([user_id, module_id]) // composite PK
-  @@map("user_module_progress")
+  @@map("user_wallets")
+}
+
+model WalletTransaction {
+  id          Int             @id @default(autoincrement())
+  user_id     Int
+  type        TransactionType
+  amount      Int
+  description String?
+  createdAt   DateTime        @default(now())
+  user        User            @relation(fields: [user_id], references: [id])
+
+  @@map("wallet_transactions")
+}
+
+enum TransactionType {
+  INFLOW
+  OUTFLOW
 }
